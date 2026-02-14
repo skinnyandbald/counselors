@@ -34,8 +34,8 @@ describe('getWindowsExecutableExtensions', () => {
     ]);
   });
 
-  it('falls back to default executable extensions', () => {
-    expect(getWindowsExecutableExtensions(undefined)).toEqual([
+  it('falls back to default executable extensions when PATHEXT is empty', () => {
+    expect(getWindowsExecutableExtensions('')).toEqual([
       '.com',
       '.exe',
       '.bat',

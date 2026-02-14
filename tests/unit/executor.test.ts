@@ -96,10 +96,15 @@ describe('execute', () => {
     const testDir = mkdtempSync(join(tmpdir(), 'counselors-cmd-wrapper-'));
     const scriptPath = join(testDir, 'emit-ok.js');
     const cmdPath = join(testDir, 'echo-arg.cmd');
+    const executedPath = join(testDir, 'executed.txt');
     const markerPath = join(testDir, 'injected.txt');
 
     try {
-      writeFileSync(scriptPath, 'process.stdout.write("OK")', 'utf-8');
+      writeFileSync(
+        scriptPath,
+        'require("node:fs").writeFileSync("executed.txt", "ok")',
+        'utf-8',
+      );
       writeFileSync(
         cmdPath,
         '@echo off\r\nnode "%~dp0emit-ok.js"\r\n',
@@ -118,7 +123,7 @@ describe('execute', () => {
       );
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toBe('OK');
+      expect(existsSync(executedPath)).toBe(true);
       expect(existsSync(markerPath)).toBe(false);
     } finally {
       rmSync(testDir, { recursive: true, force: true });

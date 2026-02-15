@@ -1,6 +1,6 @@
 import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { delimiter, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { execute } from '../../src/core/executor.js';
 
@@ -126,6 +126,89 @@ describe('execute', () => {
       expect(existsSync(executedPath)).toBe(true);
       expect(existsSync(markerPath)).toBe(false);
     } finally {
+      rmSync(testDir, { recursive: true, force: true });
+    }
+  });
+
+  it('captures stdout through windows .cmd wrappers and prepends bin dir to PATH', async () => {
+    if (process.platform !== 'win32') return;
+
+    const testDir = mkdtempSync(join(tmpdir(), 'counselors-cmd-path-'));
+    const scriptPath = join(testDir, 'print-path.js');
+    const cmdPath = join(testDir, 'print-path.cmd');
+
+    const originalPath = process.env.PATH;
+    try {
+      writeFileSync(
+        scriptPath,
+        'process.stdout.write(process.env.PATH || "")',
+        'utf-8',
+      );
+      writeFileSync(
+        cmdPath,
+        `@echo off\r\n"${process.execPath}" "${scriptPath}"\r\n`,
+        'utf-8',
+      );
+
+      // Keep PATH minimal so we can assert the injected prefix deterministically.
+      process.env.PATH = 'C:\\Windows\\System32';
+
+      const result = await execute(
+        {
+          cmd: cmdPath,
+          args: [],
+          cwd: testDir,
+        },
+        5000,
+      );
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout.startsWith(`${testDir}${delimiter}`)).toBe(true);
+      expect(result.stdout).toContain('C:\\Windows\\System32');
+    } finally {
+      if (originalPath == null) delete process.env.PATH;
+      else process.env.PATH = originalPath;
+      rmSync(testDir, { recursive: true, force: true });
+    }
+  });
+
+  it('does not duplicate bin dir in PATH when PATH already contains it (trailing separator)', async () => {
+    if (process.platform !== 'win32') return;
+
+    const testDir = mkdtempSync(join(tmpdir(), 'counselors-cmd-path-dedupe-'));
+    const scriptPath = join(testDir, 'print-path.js');
+    const cmdPath = join(testDir, 'print-path.cmd');
+
+    const originalPath = process.env.PATH;
+    try {
+      writeFileSync(
+        scriptPath,
+        'process.stdout.write(process.env.PATH || "")',
+        'utf-8',
+      );
+      writeFileSync(
+        cmdPath,
+        `@echo off\r\n"${process.execPath}" "${scriptPath}"\r\n`,
+        'utf-8',
+      );
+
+      process.env.PATH = `${testDir}\\${delimiter}C:\\Windows\\System32`;
+
+      const result = await execute(
+        {
+          cmd: cmdPath,
+          args: [],
+          cwd: testDir,
+        },
+        5000,
+      );
+
+      expect(result.exitCode).toBe(0);
+      // PATH should be unchanged (no duplicate injected prefix).
+      expect(result.stdout).toBe(process.env.PATH);
+    } finally {
+      if (originalPath == null) delete process.env.PATH;
+      else process.env.PATH = originalPath;
       rmSync(testDir, { recursive: true, force: true });
     }
   });

@@ -1,5 +1,5 @@
 import { type ChildProcess, execFileSync } from 'node:child_process';
-import { delimiter, dirname, isAbsolute } from 'node:path';
+import { delimiter, dirname, isAbsolute, normalize, parse } from 'node:path';
 import crossSpawn from 'cross-spawn';
 import stripAnsi from 'strip-ansi';
 import { computeAmpCost, parseAmpUsage } from '../adapters/amp.js';
@@ -83,7 +83,6 @@ const ENV_ALLOWLIST = [
   'SystemRoot',
   'WINDIR',
   'ComSpec',
-  'COMSPEC',
   'USERPROFILE',
   'APPDATA',
   'LOCALAPPDATA',
@@ -121,6 +120,16 @@ function buildSafeEnv(extra?: Record<string, string>): Record<string, string> {
   return env;
 }
 
+function normalizeWindowsPathForComparison(path: string): string {
+  const trimmed = path.trim().replace(/^"(.*)"$/, '$1');
+  const normalized = normalize(trimmed);
+  const root = parse(normalized).root;
+  // Keep trailing separator on roots (e.g. "C:\\" or "\\\\server\\share\\").
+  const withoutTrailing =
+    normalized === root ? normalized : normalized.replace(/[\\/]+$/, '');
+  return withoutTrailing.toLowerCase();
+}
+
 /**
  * Execute a tool invocation with timeout and output capture.
  * Uses child_process.spawn — no shell: true (security).
@@ -151,9 +160,13 @@ export function execute(
     if (process.platform === 'win32' && isAbsolute(invocation.cmd)) {
       const binDir = dirname(invocation.cmd);
       const currentPath = env.PATH ?? env.Path ?? '';
-      const parts = currentPath.split(delimiter).filter(Boolean);
+      const parts = currentPath
+        .split(delimiter)
+        .map((p) => p.trim())
+        .filter(Boolean);
+      const normalizedBinDir = normalizeWindowsPathForComparison(binDir);
       const hasBinDir = parts.some(
-        (p) => p.toLowerCase() === binDir.toLowerCase(),
+        (p) => normalizeWindowsPathForComparison(p) === normalizedBinDir,
       );
 
       if (!hasBinDir) {

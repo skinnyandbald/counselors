@@ -1,8 +1,18 @@
 name: Release Binaries
 
 on:
-  push:
-    tags: ['v*']
+  workflow_call:
+    inputs:
+      tag:
+        description: 'Tag to build binaries for (e.g., v1.2.3)'
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to build binaries for (e.g., v1.2.3)'
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -11,9 +21,20 @@ jobs:
   build-binaries:
     runs-on: ubuntu-latest
     steps:
+      - name: Normalize and validate tag
+        id: tag
+        run: |
+          TAG="${{ inputs.tag }}"
+          TAG="${TAG#refs/tags/}"
+          if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Invalid tag format '$TAG'. Expected vX.Y.Z"
+            exit 1
+          fi
+          echo "value=$TAG" >> "$GITHUB_OUTPUT"
+
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }}
+          ref: refs/tags/${{ steps.tag.outputs.value }}
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -35,6 +56,7 @@ jobs:
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.tag.outputs.value }}
           files: |
             dist/counselors-darwin-arm64
             dist/counselors-darwin-x64

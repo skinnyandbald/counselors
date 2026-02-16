@@ -47,6 +47,8 @@ jobs:
     needs: ci
     runs-on: ubuntu-latest
     if: github.actor == 'aarondfrancis'
+    outputs:
+      version: ${{ steps.version.outputs.number }}
 
     steps:
       - name: Checkout
@@ -113,12 +115,24 @@ jobs:
       - name: Publish to npm
         run: npm publish --provenance --access public
 
+  release-binaries:
+    needs: release
+    if: github.actor == 'aarondfrancis'
+    uses: ./.github/workflows/release-binaries.yml
+    with:
+      tag: v${{ needs.release.outputs.version }}
+
+  update-homebrew:
+    needs: release
+    runs-on: ubuntu-latest
+    if: github.actor == 'aarondfrancis'
+    steps:
       - name: Update Homebrew formula
         uses: mislav/bump-homebrew-formula-action@v3
         with:
           formula-name: counselors
           homebrew-tap: aarondfrancis/homebrew-tap
-          tag-name: v${{ steps.version.outputs.number }}
-          download-url: https://registry.npmjs.org/counselors/-/counselors-${{ steps.version.outputs.number }}.tgz
+          tag-name: v${{ needs.release.outputs.version }}
+          download-url: https://registry.npmjs.org/counselors/-/counselors-${{ needs.release.outputs.version }}.tgz
         env:
           COMMITTER_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}

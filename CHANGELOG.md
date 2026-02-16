@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-02-16
+
 ### Added
 - `cleanup` command to delete run output directories older than a configurable age (defaults to 1 day)
 - Tool groups (`groups` config, `counselors groups ...`, and `counselors run --group`)
@@ -20,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Windows: fixed `.cmd/.bat` execution via `cross-spawn` (stdout capture, synthetic ENOENT), and hardened PATH injection + env allowlisting
+
 
 ## [0.3.4] - 2026-02-10
 
@@ -84,9 +87,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Release workflow accepts leading `v` in version input
 
 
-[Unreleased]: https://github.com/aarondfrancis/counselors/compare/v0.3.4...HEAD
+[Unreleased]: https://github.com/aarondfrancis/counselors/compare/v0.4.0...HEAD
 [0.3.0]: https://github.com/aarondfrancis/counselors/releases/tag/v0.3.0
 [0.3.1]: https://github.com/aarondfrancis/counselors/releases/tag/v0.3.1
 [0.3.2]: https://github.com/aarondfrancis/counselors/releases/tag/v0.3.2
 [0.3.3]: https://github.com/aarondfrancis/counselors/releases/tag/v0.3.3
 [0.3.4]: https://github.com/aarondfrancis/counselors/releases/tag/v0.3.4
+[0.4.0]: https://github.com/aarondfrancis/counselors/releases/tag/v0.4.0

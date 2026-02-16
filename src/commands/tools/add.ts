@@ -120,8 +120,7 @@ async function addBuiltInTool(
   const fallbackName = selectedModel.id.startsWith(`${toolId}-`)
     ? selectedModel.id
     : `${toolId}-${selectedModel.id}`;
-  const defaultName =
-    nameOverride ?? selectedModel.compoundId ?? fallbackName;
+  const defaultName = nameOverride ?? selectedModel.compoundId ?? fallbackName;
   let name = nameOverride ?? (await promptInput('Tool name:', defaultName));
 
   if (!SAFE_ID_RE.test(name)) {

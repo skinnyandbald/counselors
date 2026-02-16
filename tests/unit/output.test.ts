@@ -47,7 +47,9 @@ describe('formatTestResults', () => {
         command: '/bin/claude -p --output-format text --model opus',
       },
     ]);
-    expect(output).toContain('$ /bin/claude -p --output-format text --model opus');
+    expect(output).toContain(
+      '$ /bin/claude -p --output-format text --model opus',
+    );
   });
 
   it('omits command line when command is undefined', () => {

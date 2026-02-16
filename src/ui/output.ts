@@ -112,6 +112,9 @@ export function formatTestResults(results: TestResult[]): string {
     if (!r.passed && r.error) {
       lines.push(`    Error: ${r.error}`);
     }
+    if (!r.passed && r.output) {
+      lines.push(`    Output: ${r.output.slice(0, 200).replace(/\n/g, '\\n')}`);
+    }
   }
   lines.push('');
   return lines.join('\n');

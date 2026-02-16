@@ -80,4 +80,31 @@ describe('formatTestResults', () => {
     expect(output).toContain('$ /bin/broken -p');
     expect(output).toContain('Error: binary not found');
   });
+
+  it('shows output on failure when present', () => {
+    const output = formatTestResults([
+      {
+        toolId: 'claude-opus',
+        passed: false,
+        output: 'some unexpected response',
+        error: 'Output did not contain "OK"',
+        durationMs: 5000,
+      },
+    ]);
+    expect(output).toContain('Output: some unexpected response');
+  });
+
+  it('omits output line on failure when output is empty', () => {
+    const output = formatTestResults([
+      {
+        toolId: 'claude-opus',
+        passed: false,
+        output: '',
+        error: 'Timed out after 30s',
+        durationMs: 30000,
+      },
+    ]);
+    expect(output).toContain('Error: Timed out after 30s');
+    expect(output).not.toContain('Output:');
+  });
 });

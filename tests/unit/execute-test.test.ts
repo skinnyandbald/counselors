@@ -174,4 +174,43 @@ describe('executeTest', () => {
     await executeTest(spyAdapter, configWithBinary);
     expect(capturedReq.binary).toBe('/custom/path/to/tool');
   });
+
+  it('reports stderr in error when output lacks OK', async () => {
+    // Use stdin adapter so executeTest overrides stdin instead of last arg
+    const stderrAdapter: ToolAdapter = {
+      ...fakeAdapter,
+      buildInvocation: (req) => ({
+        cmd: 'node',
+        args: [
+          '-e',
+          'process.stderr.write("auth failed"); process.stdout.write("nope")',
+        ],
+        stdin: 'ignored',
+        cwd: req.cwd,
+      }),
+    };
+
+    const result = await executeTest(stderrAdapter, fakeToolConfig);
+    expect(result.passed).toBe(false);
+    expect(result.error).toBe('auth failed');
+    expect(result.output).toBe('nope');
+  });
+
+  it('reports generic message when no stderr and no OK', async () => {
+    // Use stdin adapter so executeTest overrides stdin instead of last arg
+    const noOkAdapter: ToolAdapter = {
+      ...fakeAdapter,
+      buildInvocation: (req) => ({
+        cmd: 'node',
+        args: ['-e', 'process.stdout.write("something else")'],
+        stdin: 'ignored',
+        cwd: req.cwd,
+      }),
+    };
+
+    const result = await executeTest(noOkAdapter, fakeToolConfig);
+    expect(result.passed).toBe(false);
+    expect(result.error).toBe('Output did not contain "OK"');
+    expect(result.output).toContain('something else');
+  });
 });

@@ -359,13 +359,23 @@ export async function executeTest(
   const result = await execute(invocation, TEST_TIMEOUT);
 
   const passed = result.stdout.includes('OK');
+
+  let error: string | undefined;
+  if (!passed) {
+    if (result.timedOut) {
+      error = `Timed out after ${TEST_TIMEOUT / 1000}s`;
+    } else if (result.stderr.trim()) {
+      error = result.stderr.slice(0, 500);
+    } else {
+      error = 'Output did not contain "OK"';
+    }
+  }
+
   return {
     toolId: toolName ?? adapter.id,
     passed,
     output: result.stdout.slice(0, 500),
-    error: !passed
-      ? result.stderr.slice(0, 500) || 'Output did not contain "OK"'
-      : undefined,
+    error,
     durationMs: Date.now() - start,
     command,
   };

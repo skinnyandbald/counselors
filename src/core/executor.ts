@@ -358,12 +358,16 @@ export async function executeTest(
 
   const result = await execute(invocation, TEST_TIMEOUT);
 
-  const passed = result.stdout.includes('OK');
+  const passed = result.exitCode === 0 && result.stdout.includes('OK');
 
   let error: string | undefined;
   if (!passed) {
     if (result.timedOut) {
       error = `Timed out after ${TEST_TIMEOUT / 1000}s`;
+    } else if (result.exitCode !== 0) {
+      error =
+        result.stderr.trim() ||
+        `Process exited with code ${result.exitCode}`;
     } else if (result.stderr.trim()) {
       error = result.stderr.slice(0, 500);
     } else {

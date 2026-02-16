@@ -196,6 +196,44 @@ describe('executeTest', () => {
     expect(result.output).toBe('nope');
   });
 
+  it('fails when exit code is non-zero even if stdout contains OK', async () => {
+    const crashAdapter: ToolAdapter = {
+      ...fakeAdapter,
+      buildInvocation: (req) => ({
+        cmd: 'node',
+        args: [
+          '-e',
+          'process.stdout.write("User instructions: OK"); process.exit(1)',
+        ],
+        stdin: 'ignored',
+        cwd: req.cwd,
+      }),
+    };
+
+    const result = await executeTest(crashAdapter, fakeToolConfig);
+    expect(result.passed).toBe(false);
+    expect(result.error).toBe('Process exited with code 1');
+  });
+
+  it('reports stderr when exit code is non-zero and stderr is present', async () => {
+    const errAdapter: ToolAdapter = {
+      ...fakeAdapter,
+      buildInvocation: (req) => ({
+        cmd: 'node',
+        args: [
+          '-e',
+          'process.stderr.write("model not found"); process.stdout.write("OK"); process.exit(1)',
+        ],
+        stdin: 'ignored',
+        cwd: req.cwd,
+      }),
+    };
+
+    const result = await executeTest(errAdapter, fakeToolConfig);
+    expect(result.passed).toBe(false);
+    expect(result.error).toBe('model not found');
+  });
+
   it('reports generic message when no stderr and no OK', async () => {
     // Use stdin adapter so executeTest overrides stdin instead of last arg
     const noOkAdapter: ToolAdapter = {

@@ -12,7 +12,7 @@ export class GeminiAdapter extends BaseAdapter {
       id: 'gemini-3-pro',
       name: 'Gemini 3 Pro — latest',
       recommended: true,
-      extraFlags: ['-m', 'gemini-3-pro'],
+      extraFlags: ['-m', 'gemini-3-pro-preview'],
     },
     {
       id: 'gemini-2.5-pro',
@@ -22,7 +22,7 @@ export class GeminiAdapter extends BaseAdapter {
     {
       id: 'gemini-3-flash',
       name: 'Gemini 3 Flash — fast',
-      extraFlags: ['-m', 'gemini-3-flash'],
+      extraFlags: ['-m', 'gemini-3-flash-preview'],
     },
     {
       id: 'gemini-2.5-flash',

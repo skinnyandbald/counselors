@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Gemini 3 models now use the correct `-preview` suffixed API model IDs (`gemini-3-pro-preview`, `gemini-3-flash-preview`), fixing `ModelNotFoundError` when running tools
+
 ## [0.4.4] - 2026-02-16
 
 ### Fixed

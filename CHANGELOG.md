@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- `run -f` no longer creates duplicate output directories when the prompt file already lives inside the output base directory
+- Gemini adapter appends a prompt instruction to suppress tool-use narration ("I will read...", "I will list...") that was polluting headless output
+
 ## [0.4.11] - 2026-02-19
 
 ### Added

@@ -27,6 +27,23 @@ const MANUAL_UPGRADE_OPTIONS = [
 ] as const;
 const FORCE_NOTE =
   'If this is a standalone install in a non-standard location, re-run with --force.';
+const SKILL_TEMPLATE_HISTORY_URL =
+  'https://github.com/aarondfrancis/counselors/commits/main/src/commands/skill.ts';
+
+function printSkillUpdateGuidance(): void {
+  info('');
+  info('The skill template might have changed. Copy and paste this into your LLM:');
+  info('');
+  info('The counselors CLI has an updated skill template.');
+  info('');
+  info('1. Run `counselors skill` and capture the full output.');
+  info(
+    '2. Open my existing counselors skill file and compare VERY CAREFULLY for anything that changed.',
+  );
+  info('3. Apply the updates manually; do not blindly overwrite.');
+  info('4. If you need more context, check the git history for the skill template here:');
+  info(`   ${SKILL_TEMPLATE_HISTORY_URL}`);
+}
 
 function printManualUpgradeGuidance(): void {
   warn('Try one of:');
@@ -125,6 +142,8 @@ export function registerUpgradeCommand(program: Command): void {
         } else {
           warn('Upgrade completed. Re-run "counselors --version" to verify.');
         }
+
+        printSkillUpdateGuidance();
       },
     );
 }

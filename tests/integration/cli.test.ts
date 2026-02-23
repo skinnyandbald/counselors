@@ -144,6 +144,20 @@ describe('CLI', () => {
     rmSync(parsed.outputDir, { recursive: true, force: true });
   });
 
+  it('mkdir --json without prompt creates only output directory', () => {
+    const output = run('mkdir --json');
+    const parsed = JSON.parse(output);
+
+    expect(parsed).toHaveProperty('outputDir');
+    expect(parsed).toHaveProperty('promptFilePath');
+    expect(parsed).toHaveProperty('slug');
+    expect(parsed.promptSource).toBe('none');
+    expect(parsed.promptFilePath).toBeNull();
+    expect(existsSync(parsed.outputDir)).toBe(true);
+
+    rmSync(parsed.outputDir, { recursive: true, force: true });
+  });
+
   it('run --dry-run supports running the same tool multiple times', () => {
     const xdg = mkdtempSync(join(tmpdir(), 'counselors-test-'));
     try {

@@ -28,6 +28,8 @@ export class AgentReporter implements Reporter {
   private toolOrder: string[] = [];
   private heartbeatInterval: ReturnType<typeof setInterval> | null = null;
   private heartbeatStart = 0;
+  private executionStart = 0;
+  private durationMs: number | undefined;
 
   // ── Preset phases ──
 
@@ -49,7 +51,13 @@ export class AgentReporter implements Reporter {
 
   // ── Execution lifecycle ──
 
-  executionStarted(outputDir: string, toolIds: string[]): void {
+  executionStarted(
+    outputDir: string,
+    toolIds: string[],
+    opts?: { durationMs?: number },
+  ): void {
+    this.executionStart = Date.now();
+    this.durationMs = opts?.durationMs;
     const displayDir =
       !isAbsolute(outputDir) && !outputDir.startsWith('.')
         ? `./${outputDir}`
@@ -90,10 +98,8 @@ export class AgentReporter implements Reporter {
     this.stderr(
       `  ${icon} ${toolId} done  ${duration}s  ${report.wordCount.toLocaleString()} words`,
     );
-    if (report.status !== 'success' && report.error) {
-      this.stderr(
-        `    \u2514 ${report.error.split('\n')[0].slice(0, 120)}`,
-      );
+    if (report.status !== 'success' && report.stderrFile) {
+      this.stderr(`    \u2514 see ${report.stderrFile}`);
     }
   }
 
@@ -104,6 +110,16 @@ export class AgentReporter implements Reporter {
   // ── Round management ──
 
   roundStarted(round: number, totalRounds: number): void {
+    if (round > 1) {
+      const elapsed = Date.now() - this.executionStart;
+      let timing = formatDuration(elapsed) + ' elapsed';
+      if (this.durationMs) {
+        const remaining = Math.max(0, this.durationMs - elapsed);
+        timing += ` \u00b7 ~${formatDuration(remaining)} remaining`;
+      }
+      timing += ' \u00b7 Ctrl+C to stop';
+      this.stderr(`  ${timing}`);
+    }
     this.stderr(`  \u2500\u2500 Round ${round}/${totalRounds} \u2500\u2500`);
     // Reset tool states for new round
     for (const [id] of this.tools) {

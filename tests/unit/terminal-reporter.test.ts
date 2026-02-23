@@ -102,7 +102,7 @@ describe('TerminalReporter execution', () => {
     r.executionFinished();
   });
 
-  it('renders error line for failed tools', async () => {
+  it('renders stderr file path for failed tools', async () => {
     vi.useFakeTimers();
     const r = await createReporter();
     r.executionStarted('/tmp/output', ['gemini']);
@@ -113,14 +113,12 @@ describe('TerminalReporter execution', () => {
         toolId: 'gemini',
         status: 'error',
         exitCode: 1,
-        error: 'TypeError: Cannot read properties\nsome second line',
+        stderrFile: '/tmp/output/gemini.stderr',
       }),
     );
     // Force render
     vi.advanceTimersByTime(200);
-    expect(stderrOutput).toContain('TypeError: Cannot read properties');
-    // Should only include first line of error
-    expect(stderrOutput).not.toContain('some second line');
+    expect(stderrOutput).toContain('see /tmp/output/gemini.stderr');
     r.executionFinished();
   });
 
@@ -222,6 +220,30 @@ describe('TerminalReporter rounds', () => {
     r.convergenceDetected(2, 0.15, 0.3);
     expect(stderrOutput).toContain('Convergence');
     expect(stderrOutput).toContain('round 2');
+    r.executionFinished();
+  });
+
+  it('shows elapsed time and Ctrl+C hint between rounds', async () => {
+    vi.useFakeTimers();
+    const r = await createReporter();
+    r.executionStarted('/tmp/output', ['claude']);
+    r.roundStarted(1, 3);
+    vi.advanceTimersByTime(90_000);
+    r.roundStarted(2, 3);
+    expect(stderrOutput).toContain('1m 30s elapsed');
+    expect(stderrOutput).toContain('Ctrl+C to stop');
+    r.executionFinished();
+  });
+
+  it('shows remaining time when durationMs is set', async () => {
+    vi.useFakeTimers();
+    const r = await createReporter();
+    r.executionStarted('/tmp/output', ['claude'], { durationMs: 300_000 });
+    r.roundStarted(1, 3);
+    vi.advanceTimersByTime(120_000);
+    r.roundStarted(2, 3);
+    expect(stderrOutput).toContain('2m 0s elapsed');
+    expect(stderrOutput).toContain('~3m 0s remaining');
     r.executionFinished();
   });
 });

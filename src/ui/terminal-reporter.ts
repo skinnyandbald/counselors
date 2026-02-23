@@ -13,6 +13,14 @@ const GREEN = '\x1b[32m';
 const BOLD = '\x1b[1m';
 const RESET = '\x1b[0m';
 
+function formatDuration(ms: number): string {
+  const seconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  if (minutes > 0) return `${minutes}m ${secs}s`;
+  return `${secs}s`;
+}
+
 type ToolPhase = 'pending' | 'running' | 'done';
 
 interface ToolState {
@@ -42,6 +50,8 @@ export class TerminalReporter implements Reporter {
   private currentRound: number | null = null;
   private totalRounds: number | null = null;
   private executionActive = false;
+  private executionStart = 0;
+  private durationMs: number | undefined;
   private phaseSpinner: ReturnType<typeof setInterval> | null = null;
   private phaseFrame = 0;
   private phaseText = '';
@@ -68,7 +78,13 @@ export class TerminalReporter implements Reporter {
 
   // ── Execution lifecycle ──
 
-  executionStarted(outputDir: string, toolIds: string[]): void {
+  executionStarted(
+    outputDir: string,
+    toolIds: string[],
+    opts?: { durationMs?: number },
+  ): void {
+    this.executionStart = Date.now();
+    this.durationMs = opts?.durationMs;
     this.outputDir =
       !isAbsolute(outputDir) && !outputDir.startsWith('.')
         ? `./${outputDir}`
@@ -118,10 +134,20 @@ export class TerminalReporter implements Reporter {
     this.totalRounds = totalRounds;
 
     // On rounds after the first, commit the previous round's final table
+    // and show timing info
     if (round > 1) {
       // Flush current render so it stays on screen
       this.render();
       this.lineCount = 0;
+
+      const elapsed = Date.now() - this.executionStart;
+      let timing = formatDuration(elapsed) + ' elapsed';
+      if (this.durationMs) {
+        const remaining = Math.max(0, this.durationMs - elapsed);
+        timing += ` \u00b7 ~${formatDuration(remaining)} remaining`;
+      }
+      timing += ` \u00b7 Ctrl+C to stop`;
+      this.stderr(`  ${DIM}${timing}${RESET}`);
     }
 
     // Reset tool states for the new round
@@ -224,10 +250,9 @@ export class TerminalReporter implements Reporter {
       if (
         tool.phase === 'done' &&
         tool.report?.status !== 'success' &&
-        tool.report?.error
+        tool.report?.stderrFile
       ) {
-        const msg = tool.report.error.split('\n')[0].slice(0, 120);
-        lines.push(`    ${RED}\u2514 ${msg}${RESET}`);
+        lines.push(`    ${RED}\u2514 see ${tool.report.stderrFile}${RESET}`);
       }
     }
 

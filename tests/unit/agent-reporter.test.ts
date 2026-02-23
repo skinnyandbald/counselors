@@ -119,7 +119,7 @@ describe('AgentReporter execution', () => {
     r.executionFinished();
   });
 
-  it('prints error line for failed tools', async () => {
+  it('prints stderr file path for failed tools', async () => {
     const r = await createReporter();
     r.executionStarted('/tmp/output', ['gemini']);
     r.toolStarted('gemini');
@@ -129,12 +129,11 @@ describe('AgentReporter execution', () => {
         toolId: 'gemini',
         status: 'error',
         exitCode: 1,
-        error: 'TypeError: Cannot read properties\nsome second line',
+        stderrFile: '/tmp/output/gemini.stderr',
       }),
     );
     expect(stderrOutput).toContain('gemini done');
-    expect(stderrOutput).toContain('TypeError: Cannot read properties');
-    expect(stderrOutput).not.toContain('some second line');
+    expect(stderrOutput).toContain('see /tmp/output/gemini.stderr');
     r.executionFinished();
   });
 
@@ -214,6 +213,46 @@ describe('AgentReporter rounds', () => {
     r.toolStarted('codex', 444);
     expect(stderrOutput).toContain('PID 333  claude started');
     expect(stderrOutput).toContain('PID 444  codex started');
+    r.executionFinished();
+  });
+
+  it('shows elapsed time and Ctrl+C hint between rounds', async () => {
+    vi.useFakeTimers();
+    const r = await createReporter();
+    r.executionStarted('/tmp/output', ['claude']);
+    r.roundStarted(1, 3);
+    vi.advanceTimersByTime(90_000); // 1m 30s
+    stderrOutput = '';
+    r.roundStarted(2, 3);
+    expect(stderrOutput).toContain('1m 30s elapsed');
+    expect(stderrOutput).toContain('Ctrl+C to stop');
+    expect(stderrOutput).toContain('Round 2/3');
+    r.executionFinished();
+    vi.useRealTimers();
+  });
+
+  it('shows remaining time when durationMs is set', async () => {
+    vi.useFakeTimers();
+    const r = await createReporter();
+    r.executionStarted('/tmp/output', ['claude'], { durationMs: 300_000 });
+    r.roundStarted(1, 3);
+    vi.advanceTimersByTime(120_000); // 2m elapsed, 3m remaining
+    stderrOutput = '';
+    r.roundStarted(2, 3);
+    expect(stderrOutput).toContain('2m 0s elapsed');
+    expect(stderrOutput).toContain('~3m 0s remaining');
+    r.executionFinished();
+    vi.useRealTimers();
+  });
+
+  it('does not show timing on round 1', async () => {
+    const r = await createReporter();
+    r.executionStarted('/tmp/output', ['claude']);
+    stderrOutput = '';
+    r.roundStarted(1, 3);
+    expect(stderrOutput).not.toContain('elapsed');
+    expect(stderrOutput).not.toContain('Ctrl+C');
+    expect(stderrOutput).toContain('Round 1/3');
     r.executionFinished();
   });
 });

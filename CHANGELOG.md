@@ -9,11 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - `loop` command for multi-round dispatch — agents iterate across rounds, seeing prior outputs each round (`--rounds`, `--duration`, `--preset`, `--scope`)
-- Presets system for domain-specific multi-round workflows (`--preset test` for automated test gap hunting)
+- Presets system for domain-specific multi-round workflows (`--preset bug-hunt` for automated bug hunting)
+- Custom presets via YAML files — pass `--preset path/to/preset.yml` to use your own preset definitions
 - Non-TTY heartbeat: emits elapsed time and active PIDs to stderr every 60 seconds, preventing outer-agent timeouts during long-running dispatches
 
 ### Changed
-- Extracted shared `run`/`loop` utilities into `_run-shared.ts` for reuse across both commands
+- Built-in presets are now YAML files with schema validation instead of hardcoded TypeScript
+- Output directory names include a timestamp prefix for uniqueness (e.g. `1740300000-bug-hunt`)
+- Relative output paths in run summaries display with `./` prefix for terminal clickability
+- Non-TTY output is purpose-built for agent consumers with structured lifecycle messages (phase started/completed, tool started/completed with PID and duration)
+- Replaced monolithic `ProgressDisplay` with event-driven Reporter interface — `TerminalReporter` for TTY, `AgentReporter` for non-TTY, `NullReporter` for dry-run
 
 ### Fixed
 - `run -f` no longer creates duplicate output directories when the prompt file already lives inside the output base directory

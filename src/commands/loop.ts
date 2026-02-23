@@ -287,7 +287,7 @@ export function registerLoopCommand(program: Command): void {
         const runStart = Date.now();
         const effectiveRounds =
           rounds === Number.MAX_SAFE_INTEGER ? 999 : rounds;
-        reporter.executionStarted(outputDir, toolIds);
+        reporter.executionStarted(outputDir, toolIds, { durationMs });
 
         try {
           const loopResult = await runLoop({

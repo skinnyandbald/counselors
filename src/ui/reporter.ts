@@ -10,7 +10,11 @@ export interface Reporter {
   promptWritingCompleted(toolId: string): void;
 
   // ── Execution lifecycle (both run and loop) ──
-  executionStarted(outputDir: string, toolIds: string[]): void;
+  executionStarted(
+    outputDir: string,
+    toolIds: string[],
+    opts?: { durationMs?: number },
+  ): void;
   toolStarted(toolId: string, pid?: number): void;
   toolCompleted(toolId: string, report: ToolReport): void;
   executionFinished(): void;

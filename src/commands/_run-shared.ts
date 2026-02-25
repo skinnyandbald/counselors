@@ -220,6 +220,7 @@ export function resolveReadOnlyPolicy(
 export interface PromptOpts {
   file?: string;
   context?: string;
+  enrichStdinPrompt?: boolean;
 }
 
 export interface ResolvedPrompt {
@@ -302,8 +303,13 @@ export async function resolvePrompt(
       )
     : undefined;
 
+  const enrichStdinPrompt = opts.enrichStdinPrompt ?? true;
   return {
-    promptContent: buildPrompt(stdinContent, context),
+    promptContent: enrichStdinPrompt
+      ? buildPrompt(stdinContent, context)
+      : context
+        ? `${stdinContent}\n\n${context}`
+        : stdinContent,
     promptSource: 'stdin',
     slug: generateSlug(stdinContent),
   };

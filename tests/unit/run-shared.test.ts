@@ -1,6 +1,7 @@
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { Readable } from 'node:stream';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   createOutputDir,
@@ -286,6 +287,49 @@ describe('createOutputDir', () => {
     expect(result).not.toBeNull();
     expect(result!.promptContent).toBe('Just the file');
     expect(result!.promptSource).toBe('file');
+  });
+
+  it('resolvePrompt from stdin is wrapped by default', async () => {
+    const config = makeConfig();
+    const stdin = Readable.from([
+      Buffer.from('  review from stdin  ', 'utf-8'),
+    ]) as NodeJS.ReadStream;
+    Object.defineProperty(stdin, 'isTTY', { value: false });
+    const stdinSpy = vi.spyOn(process, 'stdin', 'get').mockReturnValue(stdin);
+
+    try {
+      const result = await resolvePrompt(undefined, {}, testDir, config);
+      expect(result).not.toBeNull();
+      expect(result!.promptSource).toBe('stdin');
+      expect(result!.promptContent).toContain('# Second Opinion Request');
+      expect(result!.promptContent).toContain('review from stdin');
+    } finally {
+      stdinSpy.mockRestore();
+    }
+  });
+
+  it('resolvePrompt from stdin can skip wrapping', async () => {
+    const config = makeConfig();
+    const stdin = Readable.from([
+      Buffer.from('  review from stdin  ', 'utf-8'),
+    ]) as NodeJS.ReadStream;
+    Object.defineProperty(stdin, 'isTTY', { value: false });
+    const stdinSpy = vi.spyOn(process, 'stdin', 'get').mockReturnValue(stdin);
+
+    try {
+      const result = await resolvePrompt(
+        undefined,
+        { enrichStdinPrompt: false },
+        testDir,
+        config,
+      );
+      expect(result).not.toBeNull();
+      expect(result!.promptSource).toBe('stdin');
+      expect(result!.promptContent).toBe('review from stdin');
+      expect(result!.promptContent).not.toContain('# Second Opinion Request');
+    } finally {
+      stdinSpy.mockRestore();
+    }
   });
 
   it('respects --output-dir override', () => {

@@ -245,19 +245,26 @@ export function registerLoopCommand(program: Command): void {
           // Append boilerplate
           promptContent = `${generatedPrompt}\n\n${getExecutionBoilerplate()}`;
         }
-      } else if (!promptArg && !opts.file) {
-        // Non-preset mode: resolve normally
-        const prompt = await resolvePrompt(promptArg, opts, cwd, config);
-        if (!prompt) return;
-        promptContent = prompt.promptContent;
-        promptSource = prompt.promptSource;
-        slug = prompt.slug;
       } else {
-        const prompt = await resolvePrompt(promptArg, opts, cwd, config);
+        const prompt = await resolvePrompt(
+          promptArg,
+          {
+            file: opts.file,
+            context: opts.context,
+            enrichStdinPrompt: false,
+          },
+          cwd,
+          config,
+        );
         if (!prompt) return;
         promptContent = prompt.promptContent;
         promptSource = prompt.promptSource;
         slug = prompt.slug;
+
+        // Inline shorthand prompts get an extra execution-focused pass.
+        if (promptSource === 'inline') {
+          promptContent = `${promptContent}\n\n${getExecutionBoilerplate()}`;
+        }
       }
 
       if (!slug) slug = generateSlug('loop');

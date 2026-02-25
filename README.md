@@ -130,7 +130,8 @@ input: user prompt/focus (e.g.: "focus on the auth module", "look at the sidebar
   +--> with --preset:
   |      [repo discovery phase] --> [prompt-writing phase] --> execution prompt (includes boilerplate)
   +--> without --preset:
-         execution prompt = user prompt/focus
+         inline arg prompt: enriched into an execution prompt
+         file/stdin prompt: used as provided (no automatic enrichment)
 
 execution prompt
       |

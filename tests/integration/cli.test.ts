@@ -681,6 +681,7 @@ describe('CLI', () => {
     expect(output).toContain('--preset');
     expect(output).toContain('--list-presets');
     expect(output).toContain('--discovery-tool');
+    expect(output).toContain('--no-inline-enhancement');
     expect(output).toContain('--convergence-threshold');
     expect(output).toContain('--file');
     expect(output).toContain('--tools');

@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Non-TTY output is purpose-built for agent consumers with structured lifecycle messages (phase started/completed, tool started/completed with PID and duration)
 - Replaced monolithic `ProgressDisplay` with event-driven Reporter interface — `TerminalReporter` for TTY, `AgentReporter` for non-TTY, `NullReporter` for dry-run
 - Loop prompt augmentation now uses stronger multi-round guidance: challenge prior findings, use prior findings as leads, and mark overlap status (`confirmed`, `refined`, `invalidated`, `duplicate`)
-- `loop` now enriches only direct inline prompt arguments; prompt files (`-f`) and stdin prompts are used as provided (no automatic wrapping), while inline shorthand prompts still receive execution-guideline enrichment
+- `loop` now always appends execution boilerplate, and non-preset inline prompts run discovery + prompt-writing enhancement by default (`--no-inline-enhancement` to opt out); prompt files (`-f`) and stdin prompts skip discovery/prompt-writing
 - Duration-based loop runs are now truly unbounded by round count (removed hidden 999-round cap); reporter shows `Round N` when total rounds are open-ended
 - Prior-round prompt references are capped to the most recent 8 reports to control prompt growth in long loops
 - `mkdir --json` now reports `promptSource: "none"` and `promptFilePath: null` when no prompt input is provided

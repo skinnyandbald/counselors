@@ -23,13 +23,25 @@ import {
   resolveTools,
 } from './_run-shared.js';
 
+const INLINE_PROMPT_ENHANCEMENT_DESCRIPTION = `You are preparing a multi-round code review prompt from a raw user request (no preset selected). Preserve the user's intent and success criteria, then expand it into a concrete execution prompt grounded in the discovered repository context. Require evidence-backed findings with file/function references, clear risk framing, and concrete fix suggestions.`;
+
+function withExecutionBoilerplate(promptContent: string): string {
+  const content = promptContent.trimEnd();
+  const boilerplate = getExecutionBoilerplate().trim();
+  if (content.includes(boilerplate)) return content;
+  return content.length > 0 ? `${content}\n\n${boilerplate}` : boilerplate;
+}
+
 export function registerLoopCommand(program: Command): void {
   const loopCmd = program
     .command('loop [prompt]')
     .description(
       'Multi-round dispatch — tools (agents) iterate, seeing prior outputs each round',
     )
-    .option('-f, --file <path>', 'Use a pre-built prompt file (no wrapping)')
+    .option(
+      '-f, --file <path>',
+      'Use a pre-built prompt file (skip discovery/prompt-writing enhancement)',
+    )
     .option('-t, --tools <tools>', 'Comma-separated list of tools to use')
     .option(
       '-g, --group <groups>',
@@ -47,6 +59,10 @@ export function registerLoopCommand(program: Command): void {
     .option(
       '--discovery-tool <id>',
       'Tool for discovery and prompt-writing phases (default: first tool)',
+    )
+    .option(
+      '--no-inline-enhancement',
+      'Skip discovery/prompt-writing for non-preset inline prompts',
     )
     .option(
       '--convergence-threshold <ratio>',
@@ -71,6 +87,7 @@ export function registerLoopCommand(program: Command): void {
         preset?: string;
         listPresets?: boolean;
         discoveryTool?: string;
+        inlineEnhancement?: boolean;
         convergenceThreshold?: string;
         dryRun?: boolean;
         json?: boolean;
@@ -174,6 +191,15 @@ export function registerLoopCommand(program: Command): void {
       let slug: string;
 
       const reporter = createReporter({ dryRun: opts.dryRun });
+      const getDiscoveryToolId = (): string | null => {
+        const discoveryToolId = opts.discoveryTool ?? toolIds[0];
+        if (!config.tools[discoveryToolId]) {
+          error(`Discovery tool "${discoveryToolId}" not configured.`);
+          process.exitCode = 1;
+          return null;
+        }
+        return discoveryToolId;
+      };
 
       if (preset) {
         // Preset mode: prompt arg is the user's target/focus
@@ -186,12 +212,8 @@ export function registerLoopCommand(program: Command): void {
         }
 
         // Discovery tool: first tool or explicit --discovery-tool
-        const discoveryToolId = opts.discoveryTool ?? toolIds[0];
-        if (!config.tools[discoveryToolId]) {
-          error(`Discovery tool "${discoveryToolId}" not configured.`);
-          process.exitCode = 1;
-          return;
-        }
+        const discoveryToolId = getDiscoveryToolId();
+        if (!discoveryToolId) return;
 
         slug = generateSlug(preset.name);
         promptSource = 'inline';
@@ -242,8 +264,7 @@ export function registerLoopCommand(program: Command): void {
           }
           reporter.promptWritingCompleted(discoveryToolId);
 
-          // Append boilerplate
-          promptContent = `${generatedPrompt}\n\n${getExecutionBoilerplate()}`;
+          promptContent = generatedPrompt;
         }
       } else {
         const prompt = await resolvePrompt(
@@ -261,11 +282,62 @@ export function registerLoopCommand(program: Command): void {
         promptSource = prompt.promptSource;
         slug = prompt.slug;
 
-        // Inline shorthand prompts get an extra execution-focused pass.
-        if (promptSource === 'inline') {
-          promptContent = `${promptContent}\n\n${getExecutionBoilerplate()}`;
+        const shouldEnhanceInline =
+          promptSource === 'inline' && opts.inlineEnhancement !== false;
+        if (shouldEnhanceInline) {
+          const discoveryToolId = getDiscoveryToolId();
+          if (!discoveryToolId) return;
+
+          if (opts.dryRun) {
+            promptContent =
+              '[Generated from inline prompt after discovery + prompt-writing phases]';
+          } else {
+            reporter.discoveryStarted(discoveryToolId);
+            let repoContext: string;
+            try {
+              const discovery = await runRepoDiscovery({
+                config,
+                toolId: discoveryToolId,
+                cwd,
+                target: promptArg,
+              });
+              repoContext = discovery.repoContext;
+            } catch (e) {
+              error(
+                `Discovery failed: ${e instanceof Error ? e.message : String(e)}`,
+              );
+              process.exitCode = 1;
+              return;
+            }
+            reporter.discoveryCompleted(discoveryToolId);
+
+            reporter.promptWritingStarted(discoveryToolId);
+            let generatedPrompt: string;
+            try {
+              const result = await writePrompt({
+                config,
+                toolId: discoveryToolId,
+                cwd,
+                userInput: promptArg ?? promptContent,
+                presetDescription: INLINE_PROMPT_ENHANCEMENT_DESCRIPTION,
+                repoContext,
+              });
+              generatedPrompt = result.generatedPrompt;
+            } catch (e) {
+              error(
+                `Prompt writing failed: ${e instanceof Error ? e.message : String(e)}`,
+              );
+              process.exitCode = 1;
+              return;
+            }
+            reporter.promptWritingCompleted(discoveryToolId);
+            promptContent = generatedPrompt;
+          }
         }
       }
+
+      // Always include execution boilerplate regardless of prompt source.
+      promptContent = withExecutionBoilerplate(promptContent);
 
       if (!slug) slug = generateSlug('loop');
 

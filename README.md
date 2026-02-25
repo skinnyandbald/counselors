@@ -130,8 +130,12 @@ input: user prompt/focus (e.g.: "focus on the auth module", "look at the sidebar
   +--> with --preset:
   |      [repo discovery phase] --> [prompt-writing phase] --> execution prompt (includes boilerplate)
   +--> without --preset:
-         inline arg prompt: enriched into an execution prompt
-         file/stdin prompt: used as provided (no automatic enrichment)
+         inline arg prompt:
+           default: [repo discovery phase] --> [prompt-writing phase] --> enhanced execution prompt
+           opt-out: --no-inline-enhancement (skip discovery/prompt-writing)
+         file/stdin prompt: used as provided (discovery/prompt-writing skipped)
+
+all modes: execution boilerplate is always appended
 
 execution prompt
       |
@@ -183,6 +187,7 @@ counselors loop --list-presets
 | `--duration <time>` | Max total duration (e.g. `"30m"`, `"1h"`). If set without `--rounds`, runs unlimited rounds until time expires |
 | `--preset <name-or-path>` | Use a built-in preset (e.g. `"bughunt"`) or a custom `.yml/.yaml` preset file |
 | `--list-presets` | List built-in presets and exit |
+| `--no-inline-enhancement` | For non-preset inline prompts, skip discovery + prompt-writing enhancement |
 
 Plus all `run` flags: `-f`, `-t`, `-g`, `--context`, `--read-only`, `--dry-run`, `--json`, `-o`.
 

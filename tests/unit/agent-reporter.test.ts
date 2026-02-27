@@ -58,6 +58,14 @@ describe('AgentReporter phases', () => {
     r.promptWritingCompleted('claude');
     expect(stderrOutput).toContain('Prompt-writing complete');
   });
+
+  it('prints phase PID line', async () => {
+    const r = await createReporter();
+    r.phasePidReported('claude', 82795);
+    expect(stderrOutput).toContain('PID 82795');
+    expect(stderrOutput).toContain('claude');
+    expect(stderrOutput).toContain('(phase)');
+  });
 });
 
 describe('AgentReporter execution', () => {

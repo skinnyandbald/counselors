@@ -231,6 +231,10 @@ export function registerLoopCommand(program: Command): void {
               toolId: discoveryToolId,
               cwd,
               target: promptArg,
+              onProgress: (event) => {
+                if (event.event === 'started')
+                  reporter.phasePidReported(event.toolId, event.pid!);
+              },
             });
             repoContext = discovery.repoContext;
           } catch (e) {
@@ -253,6 +257,10 @@ export function registerLoopCommand(program: Command): void {
               userInput: promptArg,
               presetDescription: preset.description,
               repoContext,
+              onProgress: (event) => {
+                if (event.event === 'started')
+                  reporter.phasePidReported(event.toolId, event.pid!);
+              },
             });
             generatedPrompt = result.generatedPrompt;
           } catch (e) {
@@ -300,6 +308,10 @@ export function registerLoopCommand(program: Command): void {
                 toolId: discoveryToolId,
                 cwd,
                 target: promptArg,
+                onProgress: (event) => {
+                  if (event.event === 'started')
+                    reporter.phasePidReported(event.toolId, event.pid!);
+                },
               });
               repoContext = discovery.repoContext;
             } catch (e) {
@@ -321,6 +333,10 @@ export function registerLoopCommand(program: Command): void {
                 userInput: promptArg ?? promptContent,
                 presetDescription: INLINE_PROMPT_ENHANCEMENT_DESCRIPTION,
                 repoContext,
+                onProgress: (event) => {
+                  if (event.event === 'started')
+                    reporter.phasePidReported(event.toolId, event.pid!);
+                },
               });
               generatedPrompt = result.generatedPrompt;
             } catch (e) {

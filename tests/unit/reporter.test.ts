@@ -9,6 +9,7 @@ describe('NullReporter', () => {
     r.discoveryCompleted('claude');
     r.promptWritingStarted('claude');
     r.promptWritingCompleted('claude');
+    r.phasePidReported('claude', 12345);
     r.executionStarted('/tmp/out', ['claude']);
     r.toolStarted('claude', 123);
     r.toolCompleted('claude', {

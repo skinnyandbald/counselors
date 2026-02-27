@@ -8,6 +8,7 @@ export interface Reporter {
   discoveryCompleted(toolId: string): void;
   promptWritingStarted(toolId: string): void;
   promptWritingCompleted(toolId: string): void;
+  phasePidReported(toolId: string, pid: number): void;
 
   // ── Execution lifecycle (both run and loop) ──
   executionStarted(
@@ -33,6 +34,7 @@ export class NullReporter implements Reporter {
   discoveryCompleted(): void {}
   promptWritingStarted(): void {}
   promptWritingCompleted(): void {}
+  phasePidReported(): void {}
   executionStarted(): void {}
   toolStarted(): void {}
   toolCompleted(): void {}

@@ -64,6 +64,16 @@ describe('TerminalReporter phases', () => {
     r.promptWritingCompleted('claude');
     expect(stderrOutput).toContain('Prompt-writing complete');
   });
+
+  it('updates spinner text with PID on phasePidReported', async () => {
+    vi.useFakeTimers();
+    const r = await createReporter();
+    r.discoveryStarted('codex');
+    stderrOutput = '';
+    r.phasePidReported('codex', 82795);
+    expect(stderrOutput).toContain('Discovery phase: codex (PID 82795)');
+    r.discoveryCompleted('codex');
+  });
 });
 
 describe('TerminalReporter execution', () => {

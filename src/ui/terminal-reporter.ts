@@ -75,6 +75,11 @@ export class TerminalReporter implements Reporter {
     this.stderr(`  ${GREEN}\u2713${RESET} Prompt-writing complete`);
   }
 
+  phasePidReported(toolId: string, pid: number): void {
+    this.phaseText = `${this.phaseText.split(' (PID')[0]} (PID ${pid})`;
+    this.renderPhase();
+  }
+
   // ── Execution lifecycle ──
 
   executionStarted(

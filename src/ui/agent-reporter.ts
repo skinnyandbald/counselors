@@ -48,6 +48,10 @@ export class AgentReporter implements Reporter {
     this.stderr('  \u2713 Prompt-writing complete');
   }
 
+  phasePidReported(toolId: string, pid: number): void {
+    this.stderr(`  \u25b8 PID ${pid}  ${toolId} (phase)`);
+  }
+
   // ── Execution lifecycle ──
 
   executionStarted(

@@ -38,7 +38,8 @@
     "node": ">=20"
   },
   "files": [
-    "dist",
+    "dist/cli.js",
+    "dist/cli.js.map",
     "assets"
   ],
   "license": "MIT",

@@ -48,7 +48,7 @@ jobs:
 
       - name: Generate checksums
         run: |
-          cd dist
+          cd release
           for f in counselors-darwin-arm64 counselors-darwin-x64 counselors-linux-x64 counselors-linux-arm64; do
             sha256sum "$f" > "$f.sha256"
           done
@@ -58,11 +58,11 @@ jobs:
         with:
           tag_name: ${{ steps.tag.outputs.value }}
           files: |
-            dist/counselors-darwin-arm64
-            dist/counselors-darwin-x64
-            dist/counselors-linux-x64
-            dist/counselors-linux-arm64
-            dist/counselors-darwin-arm64.sha256
-            dist/counselors-darwin-x64.sha256
-            dist/counselors-linux-x64.sha256
-            dist/counselors-linux-arm64.sha256
+            release/counselors-darwin-arm64
+            release/counselors-darwin-x64
+            release/counselors-linux-x64
+            release/counselors-linux-arm64
+            release/counselors-darwin-arm64.sha256
+            release/counselors-darwin-x64.sha256
+            release/counselors-linux-x64.sha256
+            release/counselors-linux-arm64.sha256

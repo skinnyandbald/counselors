@@ -1,8 +1,11 @@
-import { readFileSync } from 'node:fs';
+import { mkdirSync, readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
 const version: string = pkg.version;
+const outDir = 'release';
+
+mkdirSync(outDir, { recursive: true });
 
 const targets = [
   { bun: 'bun-darwin-arm64', suffix: 'darwin-arm64' },
@@ -12,7 +15,7 @@ const targets = [
 ];
 
 for (const target of targets) {
-  const outfile = `dist/counselors-${target.suffix}`;
+  const outfile = `${outDir}/counselors-${target.suffix}`;
   const args = [
     'build', '--compile',
     '--target', target.bun,

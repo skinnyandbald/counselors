@@ -49,7 +49,6 @@ jobs:
     if: github.actor == 'aarondfrancis'
     outputs:
       version: ${{ steps.version.outputs.number }}
-      npm_sha256: ${{ steps.tarball.outputs.sha256 }}
 
     steps:
       - name: Checkout
@@ -138,14 +137,15 @@ jobs:
       tag: v${{ needs.release.outputs.version }}
 
   update-homebrew:
-    needs: release
+    needs:
+      - release
+      - release-binaries
     runs-on: ubuntu-latest
     if: github.actor == 'aarondfrancis'
     steps:
       - name: Update Homebrew formula
         env:
           VERSION: ${{ needs.release.outputs.version }}
-          SHA256: ${{ needs.release.outputs.npm_sha256 }}
           COMMITTER_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
         run: |
           set -euo pipefail
@@ -157,14 +157,64 @@ jobs:
 
           TAP_DIR="$(mktemp -d)"
           FORMULA_PATH="Formula/counselors.rb"
-          URL="https://registry.npmjs.org/counselors/-/counselors-${VERSION}.tgz"
+          RELEASE_BASE_URL="https://github.com/aarondfrancis/counselors/releases/download/v${VERSION}"
+
+          read_sha() {
+            local name="$1"
+            curl -fsSL "${RELEASE_BASE_URL}/${name}.sha256" | awk '{print $1}' | tr -d '\r\n'
+          }
+
+          DARWIN_ARM64_SHA="$(read_sha counselors-darwin-arm64)"
+          DARWIN_X64_SHA="$(read_sha counselors-darwin-x64)"
+          LINUX_ARM64_SHA="$(read_sha counselors-linux-arm64)"
+          LINUX_X64_SHA="$(read_sha counselors-linux-x64)"
+
+          for hash in "$DARWIN_ARM64_SHA" "$DARWIN_X64_SHA" "$LINUX_ARM64_SHA" "$LINUX_X64_SHA"; do
+            if ! [[ "$hash" =~ ^[a-f0-9]{64}$ ]]; then
+              echo "Invalid checksum fetched from release assets: $hash"
+              exit 1
+            fi
+          done
 
           git clone "https://x-access-token:${COMMITTER_TOKEN}@github.com/aarondfrancis/homebrew-tap.git" "$TAP_DIR"
           cd "$TAP_DIR"
 
-          perl -i -pe "s#^\\s*url\\s+\"[^\"]+\"#  url \"$URL\"#" "$FORMULA_PATH"
-          perl -i -pe "s#^\\s*sha256\\s+(:no_check|\"[^\"]+\")#  sha256 \"$SHA256\"#" "$FORMULA_PATH"
-          perl -i -ne "print unless /Bootstrap value; replace with pinned sha256/" "$FORMULA_PATH"
+          cat > "$FORMULA_PATH" <<EOF
+          class Counselors < Formula
+            desc "Fan out prompts to multiple AI coding agents in parallel"
+            homepage "https://github.com/aarondfrancis/counselors"
+            version "${VERSION}"
+            license "MIT"
+
+            on_macos do
+              if Hardware::CPU.arm?
+                url "${RELEASE_BASE_URL}/counselors-darwin-arm64"
+                sha256 "${DARWIN_ARM64_SHA}"
+              else
+                url "${RELEASE_BASE_URL}/counselors-darwin-x64"
+                sha256 "${DARWIN_X64_SHA}"
+              end
+            end
+
+            on_linux do
+              if Hardware::CPU.arm?
+                url "${RELEASE_BASE_URL}/counselors-linux-arm64"
+                sha256 "${LINUX_ARM64_SHA}"
+              else
+                url "${RELEASE_BASE_URL}/counselors-linux-x64"
+                sha256 "${LINUX_X64_SHA}"
+              end
+            end
+
+            def install
+              bin.install Dir["counselors-*"].first => "counselors"
+            end
+
+            test do
+              assert_match version.to_s, shell_output("#{bin}/counselors --version")
+            end
+          end
+          EOF
 
           if git diff --quiet -- "$FORMULA_PATH"; then
             echo "No Homebrew formula changes to commit."

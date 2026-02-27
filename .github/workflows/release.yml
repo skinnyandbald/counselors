@@ -161,7 +161,21 @@ jobs:
 
           read_sha() {
             local name="$1"
-            curl -fsSL "${RELEASE_BASE_URL}/${name}.sha256" | awk '{print $1}' | tr -d '\r\n'
+            local hash=""
+            for attempt in {1..8}; do
+              hash="$(curl -fsSL "${RELEASE_BASE_URL}/${name}.sha256" | awk '{print $1}' | tr -d '\r\n' || true)"
+              if [[ "$hash" =~ ^[a-f0-9]{64}$ ]]; then
+                echo "$hash"
+                return 0
+              fi
+
+              if [ "$attempt" -eq 8 ]; then
+                echo "Failed to fetch valid checksum for ${name} after retries."
+                exit 1
+              fi
+
+              sleep 10
+            done
           }
 
           DARWIN_ARM64_SHA="$(read_sha counselors-darwin-arm64)"
@@ -207,7 +221,9 @@ jobs:
             end
 
             def install
-              bin.install Dir["counselors-*"].first => "counselors"
+              binary = Dir["counselors-*"].first || Dir["*"].find { |f| File.file?(f) }
+              raise "No counselors binary found in staging directory" unless binary
+              bin.install binary => "counselors"
             end
 
             test do
@@ -232,15 +248,22 @@ jobs:
       - release
       - release-binaries
       - update-homebrew
-    runs-on: macos-latest
+    runs-on: ${{ matrix.os }}
     if: github.actor == 'aarondfrancis'
     strategy:
       fail-fast: false
       matrix:
-        method:
-          - npm
-          - standalone
-          - homebrew
+        include:
+          - method: npm
+            os: macos-latest
+          - method: npm
+            os: ubuntu-latest
+          - method: standalone
+            os: macos-latest
+          - method: standalone
+            os: ubuntu-latest
+          - method: homebrew
+            os: macos-latest
     env:
       VERSION: ${{ needs.release.outputs.version }}
     steps:

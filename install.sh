@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-REPO="aarondfrancis/counselors"
+REPO="skinnyandbald/counselors"
 INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
 
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')

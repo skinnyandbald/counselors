@@ -93,6 +93,72 @@ counselors run -t claude,codex "Review src/api/ for security issues and missing 
 | Amp CLI | `amp` | enforced | [ampcode.com](https://ampcode.com) |
 | Custom | user-defined | configurable | — |
 
+## Using OpenRouter (single API key for all models)
+
+Instead of installing each provider's CLI and managing separate API keys, you can use [OpenRouter](https://openrouter.ai/) as a unified gateway. OpenRouter provides access to 200+ models through a single API key and an OpenAI-compatible endpoint.
+
+This uses counselors' built-in custom adapter — no fork or code changes required.
+
+### Setup
+
+**1. Get an API key** at [openrouter.ai/keys](https://openrouter.ai/keys) and export it:
+
+```bash
+export OPENROUTER_API_KEY="sk-or-v1-your-key-here"
+```
+
+**2. Install the wrapper script** (bundled in `scripts/`):
+
+```bash
+cp scripts/openrouter-agent ~/.local/bin/
+chmod +x ~/.local/bin/openrouter-agent
+```
+
+The script reads a prompt from stdin, sends it to OpenRouter, and prints the response. It accepts a `--model` flag for any model on OpenRouter.
+
+**3. Add tools to your config** (`~/.config/counselors/config.json`):
+
+```json
+{
+  "or-claude-sonnet": {
+    "binary": "/path/to/openrouter-agent",
+    "readOnly": { "level": "enforced" },
+    "stdin": true,
+    "custom": true,
+    "extraFlags": ["--model", "anthropic/claude-sonnet-4"]
+  },
+  "or-gpt-4o": {
+    "binary": "/path/to/openrouter-agent",
+    "readOnly": { "level": "enforced" },
+    "stdin": true,
+    "custom": true,
+    "extraFlags": ["--model", "openai/gpt-4o"]
+  },
+  "or-gemini-pro": {
+    "binary": "/path/to/openrouter-agent",
+    "readOnly": { "level": "enforced" },
+    "stdin": true,
+    "custom": true,
+    "extraFlags": ["--model", "google/gemini-2.5-pro"]
+  }
+}
+```
+
+Browse all available models at [openrouter.ai/models](https://openrouter.ai/models). Each entry uses the same script with a different `--model` flag.
+
+**4. Verify:** `counselors ls` should show your new tools.
+
+### Trade-offs vs. native CLIs
+
+| | Native CLIs | OpenRouter |
+|---|---|---|
+| API keys | One per provider | One key total |
+| Capabilities | Agentic — reads files, uses tools, iterates | Single-shot prompt/response |
+| Cost | Direct provider pricing | Small OpenRouter markup |
+| Model access | What each CLI supports | 200+ models |
+
+Native CLIs like `claude` and `codex` can browse your codebase and use tools during review. The OpenRouter wrapper sends one prompt and gets one response — still useful for code review and second opinions, but without the agentic loop. A good setup keeps one or two native CLI agents alongside OpenRouter agents for breadth.
+
 ## Commands
 
 ### `run [prompt]`

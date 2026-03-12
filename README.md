@@ -134,12 +134,12 @@ The script reads a prompt from stdin, sends it to OpenRouter, and prints the res
     "custom": true,
     "extraFlags": ["--model", "openai/gpt-4o"]
   },
-  "or-gemini-pro": {
+  "or-gemini-3.1-pro": {
     "binary": "/path/to/openrouter-agent",
     "readOnly": { "level": "enforced" },
     "stdin": true,
     "custom": true,
-    "extraFlags": ["--model", "google/gemini-2.5-pro"]
+    "extraFlags": ["--model", "google/gemini-3.1-pro-preview"]
   }
 }
 ```

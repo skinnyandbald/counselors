@@ -26,12 +26,7 @@ export class CodexAdapter extends BaseAdapter {
       id: 'gpt-5.4',
       compoundId: 'codex-5.4-medium',
       name: 'GPT-5.4 — medium reasoning',
-      extraFlags: [
-        '-m',
-        'gpt-5.4',
-        '-c',
-        'model_reasoning_effort=medium',
-      ],
+      extraFlags: ['-m', 'gpt-5.4', '-c', 'model_reasoning_effort=medium'],
     },
     {
       id: 'gpt-5.3-codex',

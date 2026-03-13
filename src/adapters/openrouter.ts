@@ -58,6 +58,11 @@ export class OpenRouterAdapter extends BaseAdapter {
       args.push(...req.extraFlags);
     }
 
-    return { cmd: req.binary ?? 'openrouter-agent', args, stdin: req.prompt, cwd: req.cwd };
+    return {
+      cmd: req.binary ?? 'openrouter-agent',
+      args,
+      stdin: req.prompt,
+      cwd: req.cwd,
+    };
   }
 }

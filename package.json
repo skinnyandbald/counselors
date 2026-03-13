@@ -8,6 +8,7 @@
     "openrouter-agent": "scripts/openrouter-agent.mjs"
   },
   "scripts": {
+    "prepare": "tsup",
     "build": "tsup",
     "build:binaries": "bun run scripts/build-binaries.ts",
     "dev": "tsup --watch",

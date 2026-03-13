@@ -1,6 +1,6 @@
 # counselors
 
-By [Aaron Francis](https://aaronfrancis.com), creator of [Faster.dev](https://faster.dev) and [Solo](https://soloterm.com).
+A fork of [Aaron Francis](https://aaronfrancis.com)'s [counselors](https://github.com/aarondfrancis/counselors) with built-in OpenRouter support and cross-platform Node.js tooling.
 
 Fan out prompts to multiple AI coding agents in parallel.
 
@@ -16,35 +16,21 @@ You are still subject to each provider's terms and rate limits. Counselors is ju
 
 ## Agentic quickstart
 
-Install the CLI yourself first (pick one):
-
-- npm (requires Node 20+): `npm install -g counselors`
-- Homebrew: `brew install aarondfrancis/homebrew-tap/counselors`
-- Standalone binary: `curl -fsSL https://github.com/aarondfrancis/counselors/raw/main/install.sh | bash`
-
-Then paste this to your AI coding agent:
+Install the CLI (requires Node 20+):
 
 ```
-Run `counselors init --auto` to discover and configure installed AI CLIs. Then run `counselors skill` to see how to create a skill for the counselors CLI.
+npm install -g @skinnyandbald/counselors
 ```
 
-Your agent will configure available tools and set up the `/counselors` slash command.
+This installs both `counselors` and `openrouter-agent` commands. Works on Windows, Mac, and Linux.
 
-### Updating your skill
-
-The recommended skill template changes over time. If you already installed `/counselors` in your agent system, don’t blindly overwrite it.
-
-Copy/paste this into your AI coding agent:
+Then install the skill for Claude Code:
 
 ```
-The counselors CLI has an updated skill template.
-
-1. Run `counselors skill` and capture the full output.
-2. Open my existing counselors skill file and compare VERY CAREFULLY for anything that changed.
-3. Apply the updates manually; do not blindly overwrite.
-4. If you need more context, check the git history for the skill template here:
-   https://github.com/aarondfrancis/counselors/commits/main/src/commands/skill.ts
+npx skills add skinnyandbald/counselors
 ```
+
+Then run `counselors init` to configure your available tools (Claude, Codex, Gemini, Amp, OpenRouter).
 
 **How it works:**
 
@@ -66,11 +52,11 @@ Your main agent handles the rest — it gathers relevant code, recent commits, a
 
 ## Human quickstart
 
-Install the CLI (pick one):
+Install the CLI (requires Node 20+):
 
-- npm (requires Node 20+): `npm install -g counselors`
-- Homebrew: `brew install aarondfrancis/homebrew-tap/counselors`
-- Standalone binary: `curl -fsSL https://github.com/aarondfrancis/counselors/raw/main/install.sh | bash`
+```
+npm install -g @skinnyandbald/counselors
+```
 
 ```bash
 # Discover installed AI CLIs and create a config
@@ -97,56 +83,25 @@ counselors run -t claude,codex "Review src/api/ for security issues and missing 
 
 Instead of installing each provider's CLI and managing separate API keys, you can use [OpenRouter](https://openrouter.ai/) as a unified gateway. OpenRouter provides access to 200+ models through a single API key and an OpenAI-compatible endpoint.
 
-This uses counselors' built-in custom adapter — no fork or code changes required.
+OpenRouter is a built-in adapter in this fork. `npm install -g @skinnyandbald/counselors` installs both the CLI and the `openrouter-agent` command automatically.
 
 ### Setup
 
-**1. Get an API key** at [openrouter.ai/keys](https://openrouter.ai/keys) and export it:
+**1. Get an API key** at [openrouter.ai/keys](https://openrouter.ai/keys) and set it:
 
 ```bash
 export OPENROUTER_API_KEY="sk-or-v1-your-key-here"
 ```
 
-**2. Install the wrapper script** (bundled in `scripts/`):
+**2. Run init** — OpenRouter is auto-discovered alongside Claude, Codex, Gemini, and Amp:
 
 ```bash
-cp scripts/openrouter-agent ~/.local/bin/
-chmod +x ~/.local/bin/openrouter-agent
+counselors init
 ```
 
-The script reads a prompt from stdin, sends it to OpenRouter, and prints the response. It accepts a `--model` flag for any model on OpenRouter.
+Select the OpenRouter models you want. Defaults: `or-claude-opus`, `or-gemini-3.1-pro`, `or-codex-5.4`.
 
-**3. Add tools to your config** (`~/.config/counselors/config.json`):
-
-```json
-{
-  "or-claude-sonnet": {
-    "binary": "/path/to/openrouter-agent",
-    "readOnly": { "level": "enforced" },
-    "stdin": true,
-    "custom": true,
-    "extraFlags": ["--model", "anthropic/claude-sonnet-4"]
-  },
-  "or-gpt-4o": {
-    "binary": "/path/to/openrouter-agent",
-    "readOnly": { "level": "enforced" },
-    "stdin": true,
-    "custom": true,
-    "extraFlags": ["--model", "openai/gpt-4o"]
-  },
-  "or-gemini-3.1-pro": {
-    "binary": "/path/to/openrouter-agent",
-    "readOnly": { "level": "enforced" },
-    "stdin": true,
-    "custom": true,
-    "extraFlags": ["--model", "google/gemini-3.1-pro-preview"]
-  }
-}
-```
-
-Browse all available models at [openrouter.ai/models](https://openrouter.ai/models). Each entry uses the same script with a different `--model` flag.
-
-**4. Verify:** `counselors ls` should show your new tools.
+**3. Verify:** `counselors ls` should show your OpenRouter tools.
 
 ### Trade-offs vs. native CLIs
 

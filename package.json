@@ -1,6 +1,6 @@
 {
-  "name": "counselors",
-  "version": "0.6.0",
+  "name": "@skinnyandbald/counselors",
+  "version": "0.7.0",
   "description": "Fan out prompts to multiple AI coding agents in parallel",
   "type": "module",
   "bin": {
@@ -41,11 +41,20 @@
   },
   "license": "MIT",
   "author": "Aaron Francis",
+  "files": [
+    "dist",
+    "scripts/openrouter-agent.mjs",
+    "assets",
+    "SKILL.md"
+  ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/aarondfrancis/counselors.git"
+    "url": "git+https://github.com/skinnyandbald/counselors.git"
   },
-  "homepage": "https://github.com/aarondfrancis/counselors",
+  "homepage": "https://github.com/skinnyandbald/counselors",
+  "publishConfig": {
+    "access": "public"
+  },
   "keywords": [
     "ai",
     "coding-agents",

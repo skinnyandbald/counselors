@@ -218,7 +218,7 @@ var SAFE_ID_RE = /^[a-zA-Z0-9._-]+$/;
 function sanitizePath(p) {
   return p.replace(/[\x00-\x08\x0A-\x1F]/g, "");
 }
-var VERSION = true ? "0.6.0" : "0.0.0-dev";
+var VERSION = true ? "0.7.0" : "0.0.0-dev";
 
 // src/types.ts
 import { z } from "zod";

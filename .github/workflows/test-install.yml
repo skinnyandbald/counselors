@@ -1,0 +1,109 @@
+name: Test Install Methods
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'package.json'
+      - 'tsup.config.ts'
+      - 'src/**'
+      - 'scripts/**'
+      - '.github/workflows/test-install.yml'
+
+jobs:
+  # Test `npm install github:skinnyandbald/counselors` — the exact
+  # command that setup.mjs in the training pack runs.
+  install-from-github:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            node-version: 20
+          - os: windows-latest
+            node-version: 22
+          - os: ubuntu-latest
+            node-version: 22
+          - os: macos-latest
+            node-version: 22
+
+    steps:
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Create temp project
+        shell: bash
+        run: |
+          mkdir test-project && cd test-project
+          npm init -y
+
+      # Global install (what setup.mjs does in global scope)
+      - name: Test global install
+        shell: bash
+        run: npm install -g github:skinnyandbald/counselors
+
+      - name: Verify global counselors binary
+        shell: bash
+        run: |
+          counselors --version
+          counselors --help
+
+      - name: Verify global openrouter-agent binary
+        shell: bash
+        run: openrouter-agent --help || echo "openrouter-agent not found (may be expected)"
+
+      # Local install (what setup.mjs does in project scope)
+      - name: Test local install
+        shell: bash
+        run: |
+          cd test-project
+          npm install github:skinnyandbald/counselors
+
+      - name: Verify local counselors binary
+        shell: bash
+        run: |
+          cd test-project
+          npx counselors --version
+          npx counselors --help
+
+      - name: Verify counselors init --auto
+        shell: bash
+        run: |
+          cd test-project
+          npx counselors init --auto || echo "init --auto exited non-zero (expected without agents installed)"
+
+  # Test that the prepare script (tsup build) works on Windows
+  # when installed as a dependency — npm runs `prepare` after
+  # cloning from GitHub.
+  build-on-install:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        node-version: [20, 22]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify dist/cli.js exists
+        shell: bash
+        run: test -f dist/cli.js || (echo "FAIL: dist/cli.js not built" && exit 1)
+
+      - name: Verify binary runs
+        shell: bash
+        run: node dist/cli.js --version

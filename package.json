@@ -39,12 +39,6 @@
   "engines": {
     "node": ">=20"
   },
-  "files": [
-    "dist/cli.js",
-    "dist/cli.js.map",
-    "assets",
-    "scripts/openrouter-agent.mjs"
-  ],
   "license": "MIT",
   "author": "Aaron Francis",
   "repository": {

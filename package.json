@@ -4,7 +4,8 @@
   "description": "Fan out prompts to multiple AI coding agents in parallel",
   "type": "module",
   "bin": {
-    "counselors": "dist/cli.js"
+    "counselors": "dist/cli.js",
+    "openrouter-agent": "scripts/openrouter-agent.mjs"
   },
   "scripts": {
     "build": "tsup",
@@ -40,7 +41,8 @@
   "files": [
     "dist/cli.js",
     "dist/cli.js.map",
-    "assets"
+    "assets",
+    "scripts/openrouter-agent.mjs"
   ],
   "license": "MIT",
   "author": "Aaron Francis",

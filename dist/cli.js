@@ -218,7 +218,7 @@ var SAFE_ID_RE = /^[a-zA-Z0-9._-]+$/;
 function sanitizePath(p) {
   return p.replace(/[\x00-\x08\x0A-\x1F]/g, "");
 }
-var VERSION = true ? "0.7.0" : "0.0.0-dev";
+var VERSION = true ? "0.7.1" : "0.0.0-dev";
 
 // src/types.ts
 import { z } from "zod";
@@ -799,12 +799,7 @@ var CodexAdapter = class extends BaseAdapter {
       id: "gpt-5.4",
       compoundId: "codex-5.4-medium",
       name: "GPT-5.4 \u2014 medium reasoning",
-      extraFlags: [
-        "-m",
-        "gpt-5.4",
-        "-c",
-        "model_reasoning_effort=medium"
-      ]
+      extraFlags: ["-m", "gpt-5.4", "-c", "model_reasoning_effort=medium"]
     },
     {
       id: "gpt-5.3-codex",
@@ -998,7 +993,12 @@ var OpenRouterAdapter = class extends BaseAdapter {
     if (req.extraFlags) {
       args.push(...req.extraFlags);
     }
-    return { cmd: req.binary ?? "openrouter-agent", args, stdin: req.prompt, cwd: req.cwd };
+    return {
+      cmd: req.binary ?? "openrouter-agent",
+      args,
+      stdin: req.prompt,
+      cwd: req.cwd
+    };
   }
 };
 
@@ -5118,7 +5118,9 @@ async function collectCustomConfig(config, presetId) {
   success(`Added "${toolId}" to config.`);
 }
 function registerAddCommand(program2) {
-  program2.command("add [tool]").description("Add a tool (claude, codex, gemini, amp, openrouter, or custom)").action(async (toolId) => {
+  program2.command("add [tool]").description(
+    "Add a tool (claude, codex, gemini, amp, openrouter, or custom)"
+  ).action(async (toolId) => {
     const config = loadConfig();
     if (!toolId) {
       const result = await runAddWizard();

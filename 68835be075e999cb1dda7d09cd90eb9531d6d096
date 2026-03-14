@@ -1,0 +1,23 @@
+tests/unit/adapters/codex.test.ts
+  be4ba0bb4954f07d 91,94-96,98
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.12",
+  "base_commit_sha": "68835be075e999cb1dda7d09cd90eb9531d6d096",
+  "prompts": {
+    "be4ba0bb4954f07d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34e02b28-c0d6-4839-8395-1dd125491344",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Ben Fisher <ben@skinnyandbald.com>",
+      "messages": [],
+      "total_additions": 5,
+      "total_deletions": 28,
+      "accepted_lines": 5,
+      "overriden_lines": 0
+    }
+  }
+}

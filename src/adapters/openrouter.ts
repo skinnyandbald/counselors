@@ -1,5 +1,25 @@
+import { readFileSync } from 'node:fs';
+import { basename } from 'node:path';
 import type { Invocation, RunRequest } from '../types.js';
 import { BaseAdapter } from './base.js';
+
+/**
+ * Resolve @file references in a prompt by inlining file contents.
+ * Native CLIs (Claude, Codex, Gemini) resolve these from disk automatically.
+ * OpenRouter's API has no filesystem access, so we inline them here.
+ */
+function resolveFileRefs(prompt: string): string {
+  return prompt.replace(/^@(.+\.md)$/gm, (_match, filePath: string) => {
+    try {
+      const content = readFileSync(filePath, 'utf-8');
+      const label = basename(filePath);
+      return `--- ${label} ---\n${content}\n--- end ${label} ---`;
+    } catch {
+      // File doesn't exist or can't be read — leave ref as-is
+      return _match;
+    }
+  });
+}
 
 export class OpenRouterAdapter extends BaseAdapter {
   id = 'openrouter';
@@ -67,7 +87,7 @@ export class OpenRouterAdapter extends BaseAdapter {
     return {
       cmd: req.binary ?? 'openrouter-agent',
       args,
-      stdin: req.prompt,
+      stdin: resolveFileRefs(req.prompt),
       cwd: req.cwd,
     };
   }

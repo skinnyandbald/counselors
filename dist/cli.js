@@ -917,6 +917,21 @@ var GeminiAdapter = class extends BaseAdapter {
 };
 
 // src/adapters/openrouter.ts
+import { readFileSync as readFileSync2 } from "fs";
+import { basename } from "path";
+function resolveFileRefs(prompt) {
+  return prompt.replace(/^@(.+\.md)$/gm, (_match, filePath) => {
+    try {
+      const content = readFileSync2(filePath, "utf-8");
+      const label = basename(filePath);
+      return `--- ${label} ---
+${content}
+--- end ${label} ---`;
+    } catch {
+      return _match;
+    }
+  });
+}
 var OpenRouterAdapter = class extends BaseAdapter {
   id = "openrouter";
   displayName = "OpenRouter";
@@ -979,7 +994,7 @@ var OpenRouterAdapter = class extends BaseAdapter {
     return {
       cmd: req.binary ?? "openrouter-agent",
       args,
-      stdin: req.prompt,
+      stdin: resolveFileRefs(req.prompt),
       cwd: req.cwd
     };
   }
@@ -1022,7 +1037,7 @@ import {
   constants,
   existsSync as existsSync4,
   readdirSync as readdirSync2,
-  readFileSync as readFileSync2,
+  readFileSync as readFileSync3,
   statSync
 } from "fs";
 import { homedir as homedir2 } from "os";
@@ -1094,12 +1109,12 @@ function getNvmPaths() {
   const aliasFile = join3(nvmDir, "alias", "default");
   if (!existsSync4(aliasFile)) return [];
   try {
-    let alias = readFileSync2(aliasFile, "utf-8").trim();
+    let alias = readFileSync3(aliasFile, "utf-8").trim();
     if (alias.startsWith("lts/")) {
       const ltsName = alias.slice(4);
       const ltsFile = join3(nvmDir, "alias", "lts", ltsName);
       if (existsSync4(ltsFile)) {
-        alias = readFileSync2(ltsFile, "utf-8").trim();
+        alias = readFileSync3(ltsFile, "utf-8").trim();
       }
     }
     const versionsDir = join3(nvmDir, "versions", "node");
@@ -1191,7 +1206,7 @@ import {
   constants as constants2,
   existsSync as existsSync5,
   lstatSync as lstatSync2,
-  readFileSync as readFileSync3,
+  readFileSync as readFileSync4,
   realpathSync,
   renameSync as renameSync2,
   rmSync as rmSync2,
@@ -1649,7 +1664,7 @@ function readNpmGlobalVersion(npmPrefix) {
   for (const packageJsonPath of packageJsonPaths) {
     if (!existsSync5(packageJsonPath)) continue;
     try {
-      const raw = readFileSync3(packageJsonPath, "utf-8");
+      const raw = readFileSync4(packageJsonPath, "utf-8");
       const parsed = JSON.parse(raw);
       if (typeof parsed.version === "string") {
         return parsed.version;
@@ -2773,7 +2788,7 @@ async function dispatch(options) {
 }
 
 // src/core/synthesis.ts
-import { existsSync as existsSync7, readFileSync as readFileSync4 } from "fs";
+import { existsSync as existsSync7, readFileSync as readFileSync5 } from "fs";
 import { join as join7 } from "path";
 function synthesize(manifest, outputDir) {
   const parts = [
@@ -2863,7 +2878,7 @@ function extractHeadings(outputDir, report) {
   const filePath = report.outputFile || join7(outputDir, `${sanitizeId(report.toolId)}.md`);
   if (!existsSync7(filePath)) return [];
   try {
-    const content = readFileSync4(filePath, "utf-8");
+    const content = readFileSync5(filePath, "utf-8");
     const headings = [];
     for (const line of content.split("\n")) {
       const match = line.match(/^#{1,3}\s+(.+)/);
@@ -3029,7 +3044,7 @@ ${refs}
 
 // src/core/prompt-builder.ts
 import { mkdirSync as mkdirSync4 } from "fs";
-import { basename, dirname as dirname4, join as join9, resolve as resolve5 } from "path";
+import { basename as basename2, dirname as dirname4, join as join9, resolve as resolve5 } from "path";
 function secondsTimestamp() {
   return Math.floor(Date.now() / 1e3);
 }
@@ -3041,11 +3056,11 @@ function generateSlug(text) {
 }
 function generateSlugFromFile(filePath) {
   const dir = dirname4(filePath);
-  const dirName = basename(dir);
+  const dirName = basename2(dir);
   if (dirName && dirName !== "." && dirName !== "..") {
     return `${secondsTimestamp()}-${slugify(dirName)}`;
   }
-  return `${secondsTimestamp()}-${slugify(basename(filePath, ".md"))}`;
+  return `${secondsTimestamp()}-${slugify(basename2(filePath, ".md"))}`;
 }
 function resolveOutputDir(baseDir, slug) {
   let outputDir = resolve5(join9(baseDir, slug));
@@ -3236,7 +3251,7 @@ Be concise. This output will be passed to another agent as context for a more de
 }
 
 // src/presets/index.ts
-import { existsSync as existsSync8, readdirSync as readdirSync4, readFileSync as readFileSync5 } from "fs";
+import { existsSync as existsSync8, readdirSync as readdirSync4, readFileSync as readFileSync6 } from "fs";
 import { dirname as dirname5, join as join12, resolve as resolve6 } from "path";
 import { fileURLToPath } from "url";
 import { parse as parseYaml } from "yaml";
@@ -3290,7 +3305,7 @@ function resolvePreset(input2) {
     if (!existsSync8(filePath2)) {
       throw new Error(`Preset file not found: ${filePath2}`);
     }
-    const content2 = readFileSync5(filePath2, "utf-8");
+    const content2 = readFileSync6(filePath2, "utf-8");
     return parsePresetYaml(content2, filePath2);
   }
   const dir = builtinPresetsDir();
@@ -3301,7 +3316,7 @@ function resolvePreset(input2) {
       `Unknown preset "${input2}". Available presets: ${available}`
     );
   }
-  const content = readFileSync5(filePath, "utf-8");
+  const content = readFileSync6(filePath, "utf-8");
   return parsePresetYaml(content, filePath);
 }
 function getPresetNames() {
@@ -3712,12 +3727,12 @@ function createReporter(opts) {
 }
 
 // src/commands/_run-shared.ts
-import { copyFileSync, readFileSync as readFileSync7 } from "fs";
-import { basename as basename2, dirname as dirname6, resolve as resolve8, sep } from "path";
+import { copyFileSync, readFileSync as readFileSync8 } from "fs";
+import { basename as basename3, dirname as dirname6, resolve as resolve8, sep } from "path";
 
 // src/core/context.ts
 import { execFileSync as execFileSync4 } from "child_process";
-import { readFileSync as readFileSync6, statSync as statSync2 } from "fs";
+import { readFileSync as readFileSync7, statSync as statSync2 } from "fs";
 import { resolve as resolve7 } from "path";
 function safeFence(content) {
   let fence = "```";
@@ -3755,7 +3770,7 @@ function gatherContext(cwd, paths, maxKb = DEFAULT_MAX_CONTEXT_KB) {
           debug(`Skipping ${p} \u2014 too large (${stat.size} bytes)`);
           continue;
         }
-        const content = readFileSync6(fullPath, "utf-8");
+        const content = readFileSync7(fullPath, "utf-8");
         const fence = safeFence(content);
         parts.push(`#### ${p}`, "", fence, content, fence, "");
         totalBytes += Buffer.byteLength(content);
@@ -3946,7 +3961,7 @@ async function resolvePrompt(promptArg, opts, cwd, config) {
     const filePath = resolve8(cwd, opts.file);
     let promptContent;
     try {
-      promptContent = readFileSync7(filePath, "utf-8");
+      promptContent = readFileSync8(filePath, "utf-8");
     } catch {
       error(`Cannot read prompt file: ${filePath}`);
       process.exitCode = 1;
@@ -4054,7 +4069,7 @@ function buildDryRunInvocations(config, toolIds, promptContent, outputDir, readO
   });
 }
 function getPromptLabel(promptArg, file) {
-  return promptArg || (file ? `file:${basename2(file)}` : "stdin");
+  return promptArg || (file ? `file:${basename3(file)}` : "stdin");
 }
 
 // src/commands/loop.ts

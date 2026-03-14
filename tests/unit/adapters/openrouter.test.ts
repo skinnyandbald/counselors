@@ -1,4 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { OpenRouterAdapter } from '../../../src/adapters/openrouter.js';
 import type { RunRequest } from '../../../src/types.js';
 
@@ -56,5 +59,68 @@ describe('OpenRouterAdapter', () => {
   it('falls back to "openrouter-agent" when req.binary is undefined', () => {
     const inv = adapter.buildInvocation(baseRequest);
     expect(inv.cmd).toBe('openrouter-agent');
+  });
+
+  describe('file ref resolution', () => {
+    const testDir = join(tmpdir(), `counselors-test-${Date.now()}`);
+    const round1File = join(testDir, 'round-1', 'or-claude-opus.md');
+
+    beforeAll(() => {
+      mkdirSync(join(testDir, 'round-1'), { recursive: true });
+      writeFileSync(round1File, 'Found a bug in auth.ts line 42.');
+    });
+
+    afterAll(() => {
+      rmSync(testDir, { recursive: true, force: true });
+    });
+
+    it('resolves @file references to inline content', () => {
+      const prompt = `Review this code.\n\n## Prior Round Outputs\n\n@${round1File}`;
+      const req = { ...baseRequest, prompt };
+      const inv = adapter.buildInvocation(req);
+      expect(inv.stdin).toContain('Found a bug in auth.ts line 42.');
+      expect(inv.stdin).toContain('--- or-claude-opus.md ---');
+      expect(inv.stdin).toContain('--- end or-claude-opus.md ---');
+      expect(inv.stdin).not.toContain(`@${round1File}`);
+    });
+
+    it('leaves non-existent @file references as-is', () => {
+      const prompt = `Review this.\n\n@/nonexistent/path/file.md`;
+      const req = { ...baseRequest, prompt };
+      const inv = adapter.buildInvocation(req);
+      expect(inv.stdin).toContain('@/nonexistent/path/file.md');
+    });
+
+    it('does not resolve @mentions that are not file paths', () => {
+      const prompt = 'cc @alice and @bob for review';
+      const req = { ...baseRequest, prompt };
+      const inv = adapter.buildInvocation(req);
+      expect(inv.stdin).toBe('cc @alice and @bob for review');
+    });
+
+    it('resolves multiple @file references', () => {
+      const file2 = join(testDir, 'round-1', 'or-gemini.md');
+      writeFileSync(file2, 'Confirmed the auth bug.');
+      const prompt = `Review.\n\n@${round1File}\n@${file2}`;
+      const req = { ...baseRequest, prompt };
+      const inv = adapter.buildInvocation(req);
+      expect(inv.stdin).toContain('Found a bug in auth.ts line 42.');
+      expect(inv.stdin).toContain('Confirmed the auth bug.');
+    });
+
+    it('does not resolve @file references for non-markdown files', () => {
+      const txtFile = join(testDir, 'some-file.txt');
+      writeFileSync(txtFile, 'some text');
+      const prompt = `Review this.\n\n@${txtFile}`;
+      const req = { ...baseRequest, prompt };
+      const inv = adapter.buildInvocation(req);
+      expect(inv.stdin).toContain(`@${txtFile}`);
+      expect(inv.stdin).not.toContain('some text');
+    });
+
+    it('passes through prompts with no @file refs unchanged', () => {
+      const inv = adapter.buildInvocation(baseRequest);
+      expect(inv.stdin).toBe('test prompt');
+    });
   });
 });

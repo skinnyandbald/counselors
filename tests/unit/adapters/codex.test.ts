@@ -88,14 +88,14 @@ describe('CodexAdapter', () => {
     expect(effortIdx).toBeLessThan(instructionIdx);
   });
 
-  it('has three gpt-5.3-codex models with different reasoning efforts', () => {
+  it('has three gpt-5.4 models with different reasoning efforts', () => {
     expect(adapter.models).toHaveLength(3);
     expect(adapter.models.map((m) => m.compoundId)).toEqual([
-      'codex-5.3-high',
-      'codex-5.3-xhigh',
-      'codex-5.3-medium',
+      'codex-5.4-high',
+      'codex-5.4-xhigh',
+      'codex-5.4-medium',
     ]);
-    expect(adapter.models.every((m) => m.id === 'gpt-5.3-codex')).toBe(true);
+    expect(adapter.models.every((m) => m.id === 'gpt-5.4')).toBe(true);
   });
 
   it('only marks the first model as recommended', () => {

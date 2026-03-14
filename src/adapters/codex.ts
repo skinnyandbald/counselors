@@ -28,29 +28,6 @@ export class CodexAdapter extends BaseAdapter {
       name: 'GPT-5.4 — medium reasoning',
       extraFlags: ['-m', 'gpt-5.4', '-c', 'model_reasoning_effort=medium'],
     },
-    {
-      id: 'gpt-5.3-codex',
-      compoundId: 'codex-5.3-high',
-      name: 'GPT-5.3 Codex — high reasoning',
-      extraFlags: ['-m', 'gpt-5.3-codex', '-c', 'model_reasoning_effort=high'],
-    },
-    {
-      id: 'gpt-5.3-codex',
-      compoundId: 'codex-5.3-xhigh',
-      name: 'GPT-5.3 Codex — xhigh reasoning',
-      extraFlags: ['-m', 'gpt-5.3-codex', '-c', 'model_reasoning_effort=xhigh'],
-    },
-    {
-      id: 'gpt-5.3-codex',
-      compoundId: 'codex-5.3-medium',
-      name: 'GPT-5.3 Codex — medium reasoning',
-      extraFlags: [
-        '-m',
-        'gpt-5.3-codex',
-        '-c',
-        'model_reasoning_effort=medium',
-      ],
-    },
   ];
 
   buildInvocation(req: RunRequest): Invocation {

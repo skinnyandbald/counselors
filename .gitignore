@@ -3,3 +3,4 @@ release/
 agents/
 *.tgz
 ogimage.txt
+.goodtogo/

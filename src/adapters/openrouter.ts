@@ -35,10 +35,10 @@ export class OpenRouterAdapter extends BaseAdapter {
   models = [
     {
       id: 'claude-opus',
-      name: 'Claude Opus 4 — most capable (Anthropic)',
+      name: 'Claude Opus 4.6 — most capable (Anthropic)',
       recommended: true,
       compoundId: 'or-claude-opus',
-      extraFlags: ['--model', 'anthropic/claude-opus-4'],
+      extraFlags: ['--model', 'anthropic/claude-opus-4.6'],
     },
     {
       id: 'gemini-3.1-pro',
@@ -56,9 +56,9 @@ export class OpenRouterAdapter extends BaseAdapter {
     },
     {
       id: 'claude-sonnet',
-      name: 'Claude Sonnet 4 — fast and capable (Anthropic)',
+      name: 'Claude Sonnet 4.6 — fast and capable (Anthropic)',
       compoundId: 'or-claude-sonnet',
-      extraFlags: ['--model', 'anthropic/claude-sonnet-4'],
+      extraFlags: ['--model', 'anthropic/claude-sonnet-4.6'],
     },
     {
       id: 'gpt-4o',

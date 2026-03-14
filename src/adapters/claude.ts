@@ -18,7 +18,7 @@ export class ClaudeAdapter extends BaseAdapter {
     },
     {
       id: 'sonnet',
-      name: 'Sonnet 4.5 — fast and capable',
+      name: 'Sonnet 4.6 — fast and capable',
       extraFlags: ['--model', 'sonnet'],
     },
     {

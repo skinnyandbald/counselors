@@ -49,6 +49,12 @@ export class OpenRouterAdapter extends BaseAdapter {
       compoundId: 'or-llama-4-maverick',
       extraFlags: ['--model', 'meta-llama/llama-4-maverick'],
     },
+    {
+      id: 'grok-4.20',
+      name: 'Grok 4.20 Beta — reasoning flagship (xAI)',
+      compoundId: 'or-grok-4.20',
+      extraFlags: ['--model', 'x-ai/grok-4.20-beta'],
+    },
   ];
 
   buildInvocation(req: RunRequest): Invocation {

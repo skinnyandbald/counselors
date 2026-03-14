@@ -986,6 +986,12 @@ var OpenRouterAdapter = class extends BaseAdapter {
       name: "Llama 4 Maverick \u2014 open source (Meta)",
       compoundId: "or-llama-4-maverick",
       extraFlags: ["--model", "meta-llama/llama-4-maverick"]
+    },
+    {
+      id: "grok-4.20",
+      name: "Grok 4.20 Beta \u2014 reasoning flagship (xAI)",
+      compoundId: "or-grok-4.20",
+      extraFlags: ["--model", "x-ai/grok-4.20-beta"]
     }
   ];
   buildInvocation(req) {

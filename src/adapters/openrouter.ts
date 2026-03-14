@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { basename } from 'node:path';
 import type { Invocation, RunRequest } from '../types.js';
+import { debug } from '../ui/logger.js';
 import { BaseAdapter } from './base.js';
 
 /**
@@ -14,8 +15,10 @@ function resolveFileRefs(prompt: string): string {
       const content = readFileSync(filePath, 'utf-8');
       const label = basename(filePath);
       return `--- ${label} ---\n${content}\n--- end ${label} ---`;
-    } catch {
-      // File doesn't exist or can't be read — leave ref as-is
+    } catch (e) {
+      debug(
+        `Could not resolve file ref "${filePath}": ${e instanceof Error ? e.message : String(e)}`,
+      );
       return _match;
     }
   });

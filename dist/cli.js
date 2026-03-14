@@ -927,7 +927,10 @@ function resolveFileRefs(prompt) {
       return `--- ${label} ---
 ${content}
 --- end ${label} ---`;
-    } catch {
+    } catch (e) {
+      debug(
+        `Could not resolve file ref "${filePath}": ${e instanceof Error ? e.message : String(e)}`
+      );
       return _match;
     }
   });

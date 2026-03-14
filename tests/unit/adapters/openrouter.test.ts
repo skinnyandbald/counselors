@@ -1,7 +1,7 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { describe, expect, it, beforeAll } from 'vitest';
+import { join } from 'node:path';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { OpenRouterAdapter } from '../../../src/adapters/openrouter.js';
 import type { RunRequest } from '../../../src/types.js';
 
@@ -70,6 +70,10 @@ describe('OpenRouterAdapter', () => {
       writeFileSync(round1File, 'Found a bug in auth.ts line 42.');
     });
 
+    afterAll(() => {
+      rmSync(testDir, { recursive: true, force: true });
+    });
+
     it('resolves @file references to inline content', () => {
       const prompt = `Review this code.\n\n## Prior Round Outputs\n\n@${round1File}`;
       const req = { ...baseRequest, prompt };
@@ -102,6 +106,16 @@ describe('OpenRouterAdapter', () => {
       const inv = adapter.buildInvocation(req);
       expect(inv.stdin).toContain('Found a bug in auth.ts line 42.');
       expect(inv.stdin).toContain('Confirmed the auth bug.');
+    });
+
+    it('does not resolve @file references for non-markdown files', () => {
+      const txtFile = join(testDir, 'some-file.txt');
+      writeFileSync(txtFile, 'some text');
+      const prompt = `Review this.\n\n@${txtFile}`;
+      const req = { ...baseRequest, prompt };
+      const inv = adapter.buildInvocation(req);
+      expect(inv.stdin).toContain(`@${txtFile}`);
+      expect(inv.stdin).not.toContain('some text');
     });
 
     it('passes through prompts with no @file refs unchanged', () => {

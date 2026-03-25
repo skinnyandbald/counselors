@@ -1,0 +1,23 @@
+SKILL.md
+  d1f32106d6e7f09a 28-43,106-110,118
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.19",
+  "base_commit_sha": "21ddd2eb41ba703c365eb0c24ce7cad1128d7192",
+  "prompts": {
+    "d1f32106d6e7f09a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8c3d745e-3e6a-4bc5-abf6-28b6b6ee9a95",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Ben Fisher <ben@skinnyandbald.com>",
+      "messages": [],
+      "total_additions": 22,
+      "total_deletions": 0,
+      "accepted_lines": 22,
+      "overriden_lines": 0
+    }
+  }
+}

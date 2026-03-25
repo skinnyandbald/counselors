@@ -25,6 +25,22 @@ Be selective — don't dump the entire codebase. Pick the most relevant code sec
 
 ---
 
+## Phase 1b: Context7 Staleness Scan
+
+Detect the project's key technologies from `package.json`, `CLAUDE.md`, `tsconfig.json`, or config files (if not already clear from Phase 1 context). For up to 5 key libraries/frameworks:
+
+1. `mcp__plugin_compound-engineering_context7__resolve-library-id` — get the Context7 library ID
+2. `mcp__plugin_compound-engineering_context7__query-docs` — fetch 2-3 relevant snippets focused on APIs, configuration, and breaking changes
+
+**Limits:**
+- Cap total reference documentation at ~8,000 tokens. Trim the least relevant snippets if exceeded.
+- If a library isn't found in Context7: note `(docs not verified for [library])` and continue.
+- If no specific libraries are identifiable from context: skip this phase entirely.
+
+Build a `REFERENCE DOCUMENTATION` block with library name + version per entry. This block will be included in the prompt (Phase 3) so reviewers can flag outdated patterns.
+
+---
+
 ## Phase 2: Agent Selection
 
 **Default agents:** `or-claude-opus`, `or-gemini-3.1-pro`, `or-codex-5.4`
@@ -87,6 +103,11 @@ Be selective — don't dump the entire codebase. Pick the most relevant code sec
 ### Related Code
 [Related files discovered via search]
 
+## Reference Documentation
+[Phase 1b content — current library docs from Context7. If Phase 1b was skipped, omit this section.]
+
+Flag anything in the code or plan that contradicts these current docs (outdated APIs, deprecated patterns, renamed config options).
+
 ## Instructions
 You are providing an independent review. Be critical and thorough.
 - Analyze the question in the context provided
@@ -94,6 +115,7 @@ You are providing an independent review. Be critical and thorough.
 - Suggest alternatives if you see better approaches
 - Be direct and opinionated — don't hedge
 - Structure your response with clear headings
+- Flag any code patterns that appear outdated vs. the Reference Documentation above
 ```
 
 ---

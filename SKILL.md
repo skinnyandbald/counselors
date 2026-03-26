@@ -34,7 +34,7 @@ Detect the project's key technologies from `package.json`, `CLAUDE.md`, `tsconfi
 
 **Limits:**
 - Cap total reference documentation at ~8,000 tokens. Trim the least relevant snippets if exceeded.
-- If a library isn't found in Context7: note `(docs not verified for [library])` and continue.
+- If a library isn't found in Context7: add a line like `[library name] (docs not verified)` to the `REFERENCE DOCUMENTATION` block and continue.
 - If no specific libraries are identifiable from context: skip this phase entirely.
 
 Build a `REFERENCE DOCUMENTATION` block with library name + version per entry. This block will be included in the prompt (Phase 3) so reviewers can flag outdated patterns.
@@ -105,8 +105,6 @@ Build a `REFERENCE DOCUMENTATION` block with library name + version per entry. T
 
 ## Reference Documentation
 [Phase 1b content — current library docs from Context7. If Phase 1b was skipped, omit this section.]
-
-Flag anything in the code or plan that contradicts these current docs (outdated APIs, deprecated patterns, renamed config options).
 
 ## Instructions
 You are providing an independent review. Be critical and thorough.

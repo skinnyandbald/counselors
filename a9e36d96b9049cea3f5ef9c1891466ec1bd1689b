@@ -1,0 +1,25 @@
+SKILL.md
+  d1f32106d6e7f09a 37
+src/commands/skill.ts
+  d1f32106d6e7f09a 42-57,143-145,154
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.19",
+  "base_commit_sha": "a9e36d96b9049cea3f5ef9c1891466ec1bd1689b",
+  "prompts": {
+    "d1f32106d6e7f09a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8c3d745e-3e6a-4bc5-abf6-28b6b6ee9a95",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Ben Fisher <ben@skinnyandbald.com>",
+      "messages": [],
+      "total_additions": 29,
+      "total_deletions": 11,
+      "accepted_lines": 25,
+      "overriden_lines": 0
+    }
+  }
+}

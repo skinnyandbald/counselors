@@ -1,0 +1,29 @@
+.github/workflows/release-binaries.yml
+  7c9085a4928aab1c 35,39,57
+.github/workflows/ci.yml
+  7c9085a4928aab1c 19,22,70,75
+.github/workflows/test-install.yml
+  7c9085a4928aab1c 34,89,92
+.github/workflows/release.yml
+  7c9085a4928aab1c 23,26,55,71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.2.5",
+  "base_commit_sha": "4bf086132f7c30dedecb164ea5d6640a4740e096",
+  "prompts": {
+    "7c9085a4928aab1c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "30ac087f-3f76-4d02-bdd9-e4201d864bfc",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Ben Fisher",
+      "messages": [],
+      "total_additions": 14,
+      "total_deletions": 14,
+      "accepted_lines": 14,
+      "overriden_lines": 0
+    }
+  }
+}

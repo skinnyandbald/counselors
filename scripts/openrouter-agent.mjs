@@ -37,8 +37,8 @@ if (!model) {
   process.exit(1);
 }
 
-if (!Number.isFinite(maxTokens) || maxTokens <= 0) {
-  process.stderr.write('Error: --max-tokens must be a positive number\n');
+if (!Number.isSafeInteger(maxTokens) || maxTokens <= 0) {
+  process.stderr.write('Error: --max-tokens must be a positive integer\n');
   process.exit(1);
 }
 

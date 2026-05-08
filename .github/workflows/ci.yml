@@ -16,10 +16,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
           cache: npm
@@ -35,8 +35,26 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
-          git diff --cached --quiet || git commit -m "style: auto-fix formatting [skip ci]"
-          git push
+          if git diff --cached --quiet; then
+            echo "No formatting changes to commit."
+            exit 0
+          fi
+          git commit -m "style: auto-fix formatting [skip ci]"
+          set +e
+          push_output=$(git push 2>&1)
+          push_exit=$?
+          set -e
+          echo "$push_output"
+          if [ $push_exit -eq 0 ]; then
+            exit 0
+          fi
+          # Only soft-pass on branch-protection rejections. Fail loudly on auth/network/other errors.
+          if echo "$push_output" | grep -qE "GH013|protected branch|Changes must be made through a pull request"; then
+            echo "::warning::Push to main rejected by branch protection. Run 'npx biome check --write' locally and open a PR."
+            exit 0
+          fi
+          echo "::error::git push failed for reasons unrelated to branch protection (see output above)."
+          exit $push_exit
 
   test:
     runs-on: ${{ matrix.os }}
@@ -67,12 +85,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ github.ref }}
 
       - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm

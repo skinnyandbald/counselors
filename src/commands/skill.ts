@@ -39,6 +39,22 @@ Parse \`$ARGUMENTS\` to understand what the user wants reviewed. Then identify r
 
 ---
 
+## Phase 1b: Context7 Staleness Scan
+
+Detect the project's key technologies from \`package.json\`, \`CLAUDE.md\`, \`tsconfig.json\`, or config files (if not already clear from Phase 1 context). For up to 5 key libraries/frameworks:
+
+1. \`mcp__plugin_compound-engineering_context7__resolve-library-id\` — get the Context7 library ID
+2. \`mcp__plugin_compound-engineering_context7__query-docs\` — fetch 2-3 relevant snippets focused on APIs, configuration, and breaking changes
+
+**Limits:**
+- Cap total reference documentation at ~8,000 tokens. Trim the least relevant snippets if exceeded.
+- If a library isn't found in Context7: add a line like \`[library name] (docs not verified)\` to the \`REFERENCE DOCUMENTATION\` block and continue.
+- If no specific libraries are identifiable from context: skip this phase entirely.
+
+Build a \`REFERENCE DOCUMENTATION\` block with library name + version per entry. This block will be included in the prompt (Phase 4) so reviewers can flag outdated patterns.
+
+---
+
 ## Phase 2: Dispatch Mode Selection
 
 Decide whether this request should use \`run\` or \`loop\`.
@@ -124,6 +140,9 @@ For preset loop mode and inline loop mode, skip this phase — counselors handle
 ### Related Code
 [@path/to/file references for related files discovered via search]
 
+## Reference Documentation
+[Phase 1b content — current library docs from Context7. If Phase 1b was skipped, omit this section.]
+
 ## Instructions
 You are providing an independent review. Be critical and thorough.
 - Read the referenced files to understand the full context
@@ -132,6 +151,7 @@ You are providing an independent review. Be critical and thorough.
 - Suggest alternatives if you see better approaches
 - Be direct and opinionated — don't hedge
 - Structure your response with clear headings
+- Flag any code patterns that appear outdated vs. the Reference Documentation above
 \`\`\`
 
 ---

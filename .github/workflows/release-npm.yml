@@ -104,7 +104,6 @@ jobs:
 
       # npm Trusted Publishing — OIDC handles auth, no long-lived token needed.
       # Configured at https://www.npmjs.com/package/@skinnyandbald/counselors/access
-
       - name: Publish to npm (Trusted Publishing)
         run: npm publish --access public --provenance
         env:

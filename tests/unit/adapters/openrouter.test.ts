@@ -32,11 +32,20 @@ describe('OpenRouterAdapter', () => {
     expect(grok!.extraFlags).toEqual(['--model', 'x-ai/grok-4.20-beta']);
   });
 
-  it('has 7 models covering all major providers', () => {
-    expect(adapter.models).toHaveLength(7);
+  it('includes gpt-5.5 model with correct compoundId and flags', () => {
+    const gpt55 = adapter.models.find((m) => m.id === 'gpt-5.5');
+    expect(gpt55).toBeDefined();
+    expect(gpt55!.compoundId).toBe('or-gpt-5.5');
+    expect(gpt55!.extraFlags).toEqual(['--model', 'openai/gpt-5.5']);
+    expect(gpt55!.recommended).toBe(true);
+  });
+
+  it('has 8 models covering all major providers', () => {
+    expect(adapter.models).toHaveLength(8);
     const ids = adapter.models.map((m) => m.id);
     expect(ids).toContain('claude-opus');
     expect(ids).toContain('gemini-3.1-pro');
+    expect(ids).toContain('gpt-5.5');
     expect(ids).toContain('codex-5.4');
     expect(ids).toContain('grok-4.20');
     expect(ids).toContain('llama-4-maverick');

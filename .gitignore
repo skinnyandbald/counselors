@@ -4,3 +4,8 @@ agents/
 *.tgz
 ogimage.txt
 .goodtogo/
+
+# Environment variables
+.env
+.env.*
+!.env.example
